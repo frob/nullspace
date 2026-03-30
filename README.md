@@ -6,7 +6,7 @@ An HTTP application framework in Go for serving APIs, HTML, WebSockets, and more
 
 ```bash
 # macOS (Homebrew)
-brew install fanderson/tap/nullspace
+brew install frob/tap/nullspace
 
 # Debian / Ubuntu
 sudo dpkg -i nullspace_*_linux_amd64.deb
@@ -18,7 +18,7 @@ sudo rpm -i nullspace_*_linux_amd64.rpm
 sudo pacman -U nullspace_*_linux_amd64.pkg.tar.zst
 
 # Go install
-go install github.com/fanderson/nullspace/cmd/nullspace@latest
+go install github.com/frob/nullspace/cmd/nullspace@latest
 ```
 
 ## Quickstart
@@ -56,12 +56,18 @@ Content collections are auto-discovered from `content/` subdirectories. Each col
 - `/api/posts` and `/api/posts/:id` — JSON
 - `/api/health` — Health check
 
+List all registered routes:
+
+```bash
+nullspace routes
+```
+
 ### Use as a library
 
 For full control, use Nullspace as a Go library:
 
 ```bash
-go get github.com/fanderson/nullspace
+go get github.com/frob/nullspace
 ```
 
 ```go
@@ -74,10 +80,10 @@ import (
     "os/signal"
     "syscall"
 
-    "github.com/fanderson/nullspace/kernel"
-    "github.com/fanderson/nullspace/nslog"
-    "github.com/fanderson/nullspace/request"
-    "github.com/fanderson/nullspace/response"
+    "github.com/frob/nullspace/kernel"
+    "github.com/frob/nullspace/nslog"
+    "github.com/frob/nullspace/request"
+    "github.com/frob/nullspace/response"
 )
 
 func main() {
@@ -108,6 +114,97 @@ func main() {
     <-quit
     k.Stop(ctx)
 }
+```
+
+## Declarative Routing
+
+Routes are defined in TOML — either in `nullspace.toml` or in per-module `routes.toml` files. TOML routes are additive; you can always define routes in Go code alongside them.
+
+```toml
+# nullspace.toml
+
+# Named groups for shared settings.
+[routing.groups.api]
+prefix = "/api"
+format = "json"
+
+# Individual routes.
+[[routing.routes]]
+group = "api"
+path = "/health"
+handler = "health.check"
+
+# Collections auto-generate CRUD routes.
+[[routing.collections]]
+name = "posts"
+api_prefix = "/api"
+html_prefix = ""
+list_template = "posts.html"
+item_template = "post.html"
+write_middleware = ["auth"]
+```
+
+### Per-module route files
+
+Each module can own its routes via an embedded `routes.toml`:
+
+```go
+//go:embed routes.toml
+var routesData []byte
+
+func (m *Module) Init(k *kernel.Kernel) error {
+    routingMod, _ := kernel.GetResource[*routing.Module](k, "routing")
+    routingMod.LoadRoutes(routesData)
+    return nil
+}
+```
+
+```toml
+# modules/auth/routes.toml
+[groups.admin]
+prefix = "/api/admin"
+format = "json"
+middleware = ["auth"]
+
+[[routes]]
+group = "admin"
+path = "/posts"
+handler = "data.list"
+collection = "posts"
+```
+
+### Built-in handlers
+
+| Handler | Description |
+|---------|-------------|
+| `data.list` | List entities from a collection |
+| `data.get` | Get a single entity by ID |
+| `data.create` | Create entity from request body |
+| `data.update` | Update entity from request body |
+| `data.delete` | Delete entity by ID |
+| `template` | Render a template (no data fetching) |
+| `redirect` | HTTP redirect |
+
+Custom handlers are registered by name and referenced in TOML:
+
+```go
+reg.HandleFunc("health.check", myHandler)
+```
+
+### Route table
+
+List all registered routes:
+
+```
+$ nullspace routes
+
+METHOD  PATH                 HANDLER       FORMAT  MIDDLEWARE  TEMPLATE
+GET     /                    template      html                home.html
+GET     /api/posts           data.list     json
+GET     /api/posts/:id       data.get      json
+POST    /api/posts           data.create   json    auth
+GET     /posts               data.list     html                posts.html
+GET     /posts/:id           data.get      html                post.html
 ```
 
 ## Configuration
@@ -162,7 +259,7 @@ NULLSPACE_DATA_SQL_DSN=postgres://localhost/mydb
          (HTTP    (format   (SQL,  (slog
           adapter, resolve, file,   adapter,
           router,  JSON,    static) per-request)
-          middleware) HTML)
+          routing) HTML)
 ```
 
 ### Modules
@@ -185,15 +282,12 @@ Modules are registered with `kernel.Use()` and managed through a lifecycle: Init
 Cross-cutting concerns are handled by a prioritized hook bus. Hooks fire at named lifecycle points and respect module enabled/disabled state per request.
 
 ```go
-// Register a hook during module Init
 k.Hook("request.before", 10, func(ctx context.Context) error {
-    // runs before every request handler
     return nil
 })
 
-// Resolution hooks short-circuit: first resolver wins
 k.HookResolve("response.format.resolve", 20, func(ctx context.Context) (any, bool, error) {
-    return "json", true, nil  // resolved, stop chain
+    return "json", true, nil
 })
 ```
 
@@ -214,22 +308,11 @@ func timing(next request.HandlerFunc) request.HandlerFunc {
 adapter.Use(timing)
 ```
 
-### Routing
-
-Routes support path parameters and metadata:
+Middleware can also be registered by name and referenced in TOML routes:
 
 ```go
-router := adapter.Router()
-
-router.Get("/api/posts", listPosts)
-router.Get("/api/posts/:id", getPost)
-router.Post("/api/posts", createPost,
-    request.WithMeta("format", "json"),
-    request.WithRouteMiddleware(authMiddleware),
-)
+reg.Middleware("auth", myAuthMiddleware)
 ```
-
-Dynamic routes take precedence over static files.
 
 ### Format resolution
 
@@ -237,25 +320,16 @@ Response format is resolved through a prioritized module chain:
 
 | Priority | Module | Source |
 |----------|--------|--------|
-| 10 | `format.route_override` | Route metadata (`WithMeta("format", "json")`) |
-| 20 | `format.query_param` | Query string (`?format=json`) |
+| 10 | `format.route_override` | Route metadata |
+| 20 | `format.query_param` | `?format=json` |
 | 30 | `format.content_negotiate` | `Accept` header |
 | 40 | `format.default` | Configured default |
-
-Each resolver is an independent module that can be disabled via config.
 
 ### Data modules
 
 **Static files** — serves from a directory as a fallback when no route matches.
 
 **File entities** — stores records as files (markdown with YAML/TOML frontmatter, JSON, or TOML). Directory = collection, filename = ID.
-
-```
-content/
-  posts/
-    hello-world.md
-    architecture.md
-```
 
 **SQL** — wraps `database/sql` with SQLite as the default driver (pure Go, no CGO). Opt-in via config.
 
@@ -268,12 +342,13 @@ Configuration is snapshotted at the start of each request. A request always comp
 ```
 nullspace/
 ├── cmd/
-│   ├── nullspace/      Installable binary (nullspace serve / init)
+│   ├── nullspace/      Installable binary (serve / init / routes)
 │   └── example/        Example application (library usage)
 ├── kernel/             Core: module registry, hook bus, config, service locator
 ├── nslog/              Logging module (slog adapter, per-request loggers)
 ├── request/            HTTP adapter, router, middleware, context
 ├── response/           Format resolution, JSON/HTML formatters, pipeline
+├── routing/            Declarative TOML routing, handler registry, built-in handlers
 ├── data/
 │   ├── static/         Static file serving
 │   ├── file/           File-based entity storage

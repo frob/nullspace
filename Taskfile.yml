@@ -1,0 +1,195 @@
+version: "3"
+
+vars:
+  APP_IMAGE: nullspace
+  DOCS_IMAGE: nullspace-docs
+  DOCS_DIR: docs
+  DOCS_BUILD_DIR: docs/_build/html
+  EXAMPLE_DIR: cmd/example
+  VERSION:
+    sh: git describe --tags --always --dirty 2>/dev/null || echo dev
+  BIN_DIR: bin
+
+tasks:
+  # ---------- Development ----------
+
+  build:
+    desc: Build all packages
+    cmds:
+      - go build ./...
+
+  test:
+    desc: Run all tests
+    cmds:
+      - go test ./... {{.CLI_ARGS}}
+
+  test:verbose:
+    desc: Run all tests with verbose output
+    cmds:
+      - go test ./... -v {{.CLI_ARGS}}
+
+  test:coverage:
+    desc: Run tests with coverage report
+    cmds:
+      - go test ./... -coverprofile=coverage.out {{.CLI_ARGS}}
+      - go tool cover -func=coverage.out
+    generates:
+      - coverage.out
+
+  test:coverage:html:
+    desc: Open coverage report in browser
+    deps: [test:coverage]
+    cmds:
+      - go tool cover -html=coverage.out
+
+  lint:
+    desc: Run go vet on all packages
+    cmds:
+      - go vet ./...
+
+  fmt:
+    desc: Format all Go source files
+    cmds:
+      - gofmt -w .
+
+  fmt:check:
+    desc: Check formatting without modifying files
+    cmds:
+      - test -z "$(gofmt -l .)" || (echo "Files need formatting:" && gofmt -l . && exit 1)
+
+  tidy:
+    desc: Tidy go.mod and go.sum
+    cmds:
+      - go mod tidy
+
+  check:
+    desc: Run all checks (fmt, vet, test)
+    cmds:
+      - task: fmt:check
+      - task: lint
+      - task: test
+
+  # ---------- Install & Run ----------
+
+  install:
+    desc: Install the nullspace binary to $GOPATH/bin
+    cmds:
+      - go install -ldflags "-s -w -X main.version={{.VERSION}}" ./cmd/nullspace
+
+  dist:
+    desc: Build a release binary to ./bin/
+    cmds:
+      - mkdir -p {{.BIN_DIR}}
+      - CGO_ENABLED=0 go build -ldflags "-s -w -X main.version={{.VERSION}}" -o {{.BIN_DIR}}/nullspace ./cmd/nullspace
+    generates:
+      - "{{.BIN_DIR}}/nullspace"
+
+  dist:all:
+    desc: Cross-compile for common platforms
+    cmds:
+      - mkdir -p {{.BIN_DIR}}
+      - GOOS=linux   GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-s -w -X main.version={{.VERSION}}" -o {{.BIN_DIR}}/nullspace-linux-amd64   ./cmd/nullspace
+      - GOOS=linux   GOARCH=arm64 CGO_ENABLED=0 go build -ldflags "-s -w -X main.version={{.VERSION}}" -o {{.BIN_DIR}}/nullspace-linux-arm64   ./cmd/nullspace
+      - GOOS=darwin  GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-s -w -X main.version={{.VERSION}}" -o {{.BIN_DIR}}/nullspace-darwin-amd64  ./cmd/nullspace
+      - GOOS=darwin  GOARCH=arm64 CGO_ENABLED=0 go build -ldflags "-s -w -X main.version={{.VERSION}}" -o {{.BIN_DIR}}/nullspace-darwin-arm64  ./cmd/nullspace
+      - GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-s -w -X main.version={{.VERSION}}" -o {{.BIN_DIR}}/nullspace-windows-amd64.exe ./cmd/nullspace
+
+  run:
+    desc: Run the example application
+    dir: "{{.EXAMPLE_DIR}}"
+    cmds:
+      - go run .
+
+  run:nullspace:
+    desc: Run the nullspace binary from source
+    cmds:
+      - go run ./cmd/nullspace {{.CLI_ARGS}}
+
+  run:watch:
+    desc: Run the example with file watching (requires entr)
+    dir: "{{.EXAMPLE_DIR}}"
+    cmds:
+      - find ../.. -name '*.go' | entr -r go run .
+
+  # ---------- Docker ----------
+
+  docker:build:
+    desc: Build the application Docker image
+    cmds:
+      - docker build --build-arg VERSION={{.VERSION}} -t {{.APP_IMAGE}} .
+    sources:
+      - "**/*.go"
+      - go.mod
+      - go.sum
+      - Dockerfile
+
+  docker:binary:
+    desc: Build the binary using Docker and copy to ./bin/
+    cmds:
+      - mkdir -p {{.BIN_DIR}}
+      - docker build --build-arg VERSION={{.VERSION}} --target binary --output={{.BIN_DIR}} .
+
+  docker:run:
+    desc: Run the application in a container (mount current dir as project)
+    deps: [docker:build]
+    cmds:
+      - docker run --rm -p 8080:8080 -v {{.ROOT_DIR}}/cmd/example:/app {{.APP_IMAGE}}
+
+  docker:test:
+    desc: Run tests in a container
+    cmds:
+      - docker run --rm -v {{.ROOT_DIR}}:/src -w /src golang:1.25-alpine go test ./... {{.CLI_ARGS}}
+
+  # ---------- Documentation ----------
+
+  docs:build:
+    desc: Build documentation (HTML) in a container
+    cmds:
+      - docker build -t {{.DOCS_IMAGE}} {{.DOCS_DIR}}
+      - docker run --rm -v {{.ROOT_DIR}}/{{.DOCS_DIR}}:/docs {{.DOCS_IMAGE}}
+    sources:
+      - docs/**/*.rst
+      - docs/conf.py
+    generates:
+      - "{{.DOCS_BUILD_DIR}}/**"
+
+  docs:serve:
+    desc: Build and serve documentation at http://localhost:8000
+    deps: [docs:build]
+    cmds:
+      - docker rm -f nullspace-docs-server 2>/dev/null || true
+      - echo "Serving docs at http://localhost:8000"
+      - docker run --rm --name nullspace-docs-server -p 8000:80 -v {{.ROOT_DIR}}/{{.DOCS_BUILD_DIR}}:/usr/share/caddy:ro caddy:2-alpine
+
+  docs:clean:
+    desc: Remove built documentation
+    cmds:
+      - rm -rf {{.DOCS_BUILD_DIR}}
+
+  # ---------- Release ----------
+
+  release:
+    desc: Create a full release (tag, build, publish)
+    cmds:
+      - goreleaser release --clean {{.CLI_ARGS}}
+
+  release:snapshot:
+    desc: Build a release locally without publishing (test the pipeline)
+    cmds:
+      - goreleaser release --snapshot --clean {{.CLI_ARGS}}
+
+  release:check:
+    desc: Validate the goreleaser config
+    cmds:
+      - goreleaser check
+
+  # ---------- Clean ----------
+
+  clean:
+    desc: Remove all build artifacts
+    cmds:
+      - rm -f coverage.out
+      - rm -rf {{.BIN_DIR}}
+      - rm -rf dist
+      - rm -rf {{.DOCS_BUILD_DIR}}
+      - go clean ./...

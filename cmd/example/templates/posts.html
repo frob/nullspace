@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Posts — Nullspace Example</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav>
+        <a href="/">Home</a>
+        <a href="/posts">Posts</a>
+        <a href="/forms/contact">Contact</a>
+        <a href="/api/posts">API</a>
+    </nav>
+    <h1>Posts</h1>
+    {{range .Items}}
+    <article>
+        <h2><a href="/posts/{{.ID}}">{{.title}}</a></h2>
+        <div class="post-meta">
+            {{.date}}
+            {{range .tags}}<span class="tag">{{.}}</span>{{end}}
+        </div>
+    </article>
+    {{end}}
+</body>
+</html>

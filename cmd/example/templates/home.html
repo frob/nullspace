@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Nullspace Example</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav>
+        <a href="/">Home</a>
+        <a href="/posts">Posts</a>
+        <a href="/forms/contact">Contact</a>
+        <a href="/api/posts">API</a>
+    </nav>
+    <h1>Nullspace Example</h1>
+    <p>This is a sample application built with the Nullspace framework.</p>
+    <h2>Features Demonstrated</h2>
+    <ul>
+        <li><a href="/posts">HTML posts</a> — file-based content with templates</li>
+        <li><a href="/api/posts">JSON API</a> — same data, different format</li>
+        <li><a href="/api/posts?pretty=true">Pretty JSON</a> — with ?pretty=true</li>
+        <li><a href="/forms/contact">Contact form</a> — webform module with validation and storage</li>
+        <li><a href="/api/admin/posts">Admin API</a> — protected by Basic Auth (admin / secret)</li>
+        <li><a href="/css/style.css">Static files</a> — served from /public</li>
+        <li><a href="/api/health">Health check</a> — kernel status</li>
+    </ul>
+    <h2>Example Modules</h2>
+    <ul>
+        <li><strong>Auth</strong> — Basic auth middleware protecting /api/admin/* routes</li>
+        <li><strong>Forms</strong> — Declarative webforms defined in TOML config with validation, file storage, and custom hooks</li>
+    </ul>
+</body>
+</html>

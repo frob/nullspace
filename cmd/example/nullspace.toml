@@ -1,0 +1,103 @@
+[request]
+addr = ":8080"
+
+[log]
+level = "debug"
+format = "text"
+
+[response]
+default_format = "json"
+template_dir = "./templates"
+
+[data.static]
+dir = "./public"
+
+[data.file]
+dir = "./content"
+format = "markdown"
+
+# Enable example modules.
+[modules]
+"auth" = true
+"forms" = true
+
+# Basic auth config — credentials and prefix.
+[auth]
+realm = "Nullspace Admin"
+prefix = "/api/admin"
+
+[auth.users]
+admin = "secret"
+editor = "changeme"
+
+# Webforms — define forms declaratively.
+[forms.forms.contact]
+title = "Contact Us"
+success_message = "Thanks for reaching out! We'll get back to you soon."
+store = "form-submissions"
+
+[[forms.forms.contact.fields]]
+name = "name"
+label = "Your Name"
+type = "text"
+required = true
+
+[[forms.forms.contact.fields]]
+name = "email"
+label = "Email Address"
+type = "email"
+required = true
+
+[[forms.forms.contact.fields]]
+name = "subject"
+label = "Subject"
+type = "select"
+required = true
+options = ["General Inquiry", "Bug Report", "Feature Request"]
+
+[[forms.forms.contact.fields]]
+name = "message"
+label = "Message"
+type = "textarea"
+required = true
+
+# --- Project Routes ---
+# Module-specific routes live in each module's routes.toml.
+# These are project-level routes and shared groups.
+
+[routing.groups.api]
+prefix = "/api"
+format = "json"
+
+[routing.groups.pages]
+prefix = ""
+format = "html"
+
+# Home page.
+[[routing.routes]]
+group = "pages"
+path = "/"
+handler = "template"
+template = "home.html"
+
+# Auto-generate CRUD routes for posts.
+[[routing.collections]]
+name = "posts"
+source = "data.file"
+api_prefix = "/api"
+html_prefix = ""
+list_template = "posts.html"
+item_template = "post.html"
+write_middleware = ["auth"]
+
+# Health check.
+[[routing.routes]]
+group = "api"
+path = "/health"
+handler = "health.check"
+
+# Redirect example.
+[[routing.routes]]
+path = "/blog"
+handler = "redirect"
+redirect = "/posts"

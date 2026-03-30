@@ -1,0 +1,5 @@
+bin/
+dist/
+coverage.out
+*.db
+docs/_build/

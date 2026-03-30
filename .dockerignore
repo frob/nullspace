@@ -1,0 +1,5 @@
+docs/_build
+coverage.out
+bin/
+*.db
+.git

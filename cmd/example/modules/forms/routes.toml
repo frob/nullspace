@@ -1,0 +1,12 @@
+# Forms module routes.
+#
+# The form GET/POST routes (/forms/:name) are generated dynamically
+# from the [forms.forms.*] config. This file defines the submissions
+# API which is static regardless of which forms are configured.
+
+# Form submissions are stored via the file data module.
+# This collection auto-generates CRUD API routes for all submissions.
+[[collections]]
+name = "form-submissions"
+source = "data.file"
+api_prefix = "/api"

@@ -1,0 +1,14 @@
+FROM alpine:3.21
+
+RUN apk add --no-cache ca-certificates
+
+# dockers_v2 places the binary under linux/<arch>/ in the build context.
+# Docker buildx sets TARGETOS and TARGETARCH automatically.
+ARG TARGETOS
+ARG TARGETARCH
+COPY ${TARGETOS}/${TARGETARCH}/nullspace /usr/local/bin/nullspace
+
+WORKDIR /app
+EXPOSE 8080
+
+ENTRYPOINT ["nullspace"]

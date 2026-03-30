@@ -1,0 +1,102 @@
+version: 2
+
+project_name: nullspace
+
+before:
+  hooks:
+    - go mod tidy
+    - go test ./...
+
+builds:
+  - id: nullspace
+    main: ./cmd/nullspace
+    binary: nullspace
+    ldflags:
+      - -s -w -X main.version={{.Version}}
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+
+archives:
+  - id: default
+    formats:
+      - tar.gz
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - README.md
+      - LICENSE*
+
+checksum:
+  name_template: "checksums.txt"
+  algorithm: sha256
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^ci:"
+      - "^chore:"
+
+release:
+  github:
+    owner: frob
+    name: nullspace
+
+# Homebrew
+homebrew_casks:
+  - name: nullspace
+    repository:
+      owner: frob
+      name: homebrew-tap
+    directory: Casks
+    homepage: "https://github.com/frob/nullspace"
+    description: "HTTP application framework for APIs, HTML, WebSockets, and more"
+    binaries:
+      - nullspace
+    url:
+      verified: "github.com/frob/nullspace"
+
+# Linux packages: deb (Debian/Ubuntu), rpm (Rocky/RHEL/Fedora), archlinux (Arch)
+nfpms:
+  - id: packages
+    package_name: nullspace
+    vendor: frob
+    homepage: "https://github.com/frob/nullspace"
+    maintainer: "frob"
+    description: "HTTP application framework for APIs, HTML, WebSockets, and more"
+    license: "MIT"
+    formats:
+      - deb
+      - rpm
+      - archlinux
+    bindir: /usr/bin
+    contents:
+      - src: cmd/example/nullspace.toml
+        dst: /etc/nullspace/nullspace.toml
+        type: config
+    rpm:
+      group: Development/Tools
+    deb:
+      lintian_overrides:
+        - statically-linked-binary
+
+# Docker images (multi-arch)
+dockers_v2:
+  - images:
+      - "ghcr.io/frob/nullspace"
+    tags:
+      - "{{ .Version }}"
+      - "latest"
+    platforms:
+      - linux/amd64
+      - linux/arm64
+    dockerfile: Dockerfile.release
+    build_args:
+      VERSION: "{{ .Version }}"

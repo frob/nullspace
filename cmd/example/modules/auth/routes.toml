@@ -1,0 +1,15 @@
+# Auth module routes — protected admin endpoints.
+#
+# These routes are behind the "auth" middleware, which requires
+# HTTP Basic Auth credentials defined in nullspace.toml [auth.users].
+
+[groups.admin]
+prefix = "/api/admin"
+format = "json"
+middleware = ["auth"]
+
+[[routes]]
+group = "admin"
+path = "/posts"
+handler = "data.list"
+collection = "posts"
