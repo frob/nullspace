@@ -34,6 +34,7 @@ middleware.
    guides/data
    guides/custom-modules
    guides/session
+   guides/httpsecurity
    guides/example-modules
    guides/deployment
 
@@ -47,4 +48,5 @@ middleware.
    api/routing
    api/nslog
    api/session
+   api/httpsecurity
    api/data

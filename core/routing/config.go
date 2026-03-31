@@ -68,6 +68,16 @@ type Route struct {
 	// Set to "ignore" to bypass session.load and session.require middleware
 	// on this route even when the route belongs to an authenticated group.
 	Session string `json:"session" toml:"session"`
+
+	// Csrf controls CSRF token enforcement for this route.
+	// Set to "true" to require CSRF token validation on state-changing methods.
+	// Requires the http-security module to be enabled.
+	Csrf string `json:"csrf" toml:"csrf"`
+
+	// HttpsRedirect controls HTTPS enforcement for this route.
+	// Set to "true" to redirect HTTP requests to HTTPS.
+	// Requires the http-security module to be enabled.
+	HttpsRedirect string `json:"https_redirect" toml:"https_redirect"`
 }
 
 // Collection defines auto-generated CRUD routes for a data collection.
@@ -100,15 +110,17 @@ type Collection struct {
 // resolvedRoute is an internal representation after group settings are merged
 // and collection routes are expanded.
 type resolvedRoute struct {
-	Method     string
-	Path       string
-	Handler    string
-	Format     string
-	Template   string
-	Middleware []string
-	Collection string
-	DataParam  string
-	Redirect   string
-	StatusCode int
-	Session    string
+	Method        string
+	Path          string
+	Handler       string
+	Format        string
+	Template      string
+	Middleware    []string
+	Collection    string
+	DataParam     string
+	Redirect      string
+	StatusCode    int
+	Session       string
+	Csrf          string
+	HttpsRedirect string
 }

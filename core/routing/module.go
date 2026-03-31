@@ -240,17 +240,19 @@ func (m *Module) expandRoute(r Route) []resolvedRoute {
 	var resolved []resolvedRoute
 	for _, method := range methods {
 		resolved = append(resolved, resolvedRoute{
-			Method:     strings.ToUpper(method),
-			Path:       path,
-			Handler:    r.Handler,
-			Format:     format,
-			Template:   r.Template,
-			Middleware: mw,
-			Collection: r.Collection,
-			DataParam:  dataParam,
-			Redirect:   r.Redirect,
-			StatusCode: r.StatusCode,
-			Session:    r.Session,
+			Method:        strings.ToUpper(method),
+			Path:          path,
+			Handler:       r.Handler,
+			Format:        format,
+			Template:      r.Template,
+			Middleware:    mw,
+			Collection:    r.Collection,
+			DataParam:     dataParam,
+			Redirect:      r.Redirect,
+			StatusCode:    r.StatusCode,
+			Session:       r.Session,
+			Csrf:          r.Csrf,
+			HttpsRedirect: r.HttpsRedirect,
 		})
 	}
 	return resolved
@@ -358,6 +360,12 @@ func (m *Module) registerRoute(router *request.Router, r resolvedRoute) error {
 	}
 	if r.Session != "" {
 		opts = append(opts, request.WithMeta("session", r.Session))
+	}
+	if r.Csrf != "" {
+		opts = append(opts, request.WithMeta("csrf", r.Csrf))
+	}
+	if r.HttpsRedirect != "" {
+		opts = append(opts, request.WithMeta("https_redirect", r.HttpsRedirect))
 	}
 
 	// Resolve middleware (warn and skip unknown middleware).
