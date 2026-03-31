@@ -3,3 +3,4 @@ dist/
 coverage.out
 *.db
 docs/_build/
+scratch.md
