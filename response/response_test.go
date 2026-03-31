@@ -91,6 +91,25 @@ func TestHTMLFormatter(t *testing.T) {
 	}
 }
 
+func TestHTMLFormatterPathTraversal(t *testing.T) {
+	// Set up two dirs: the template dir and a "secret" dir outside it.
+	templateDir := t.TempDir()
+	secretDir := t.TempDir()
+	os.WriteFile(filepath.Join(secretDir, "secret.txt"), []byte("secret contents"), 0644)
+
+	f := NewHTMLFormatter(templateDir)
+	ctx := context.Background()
+
+	// Construct a traversal name that points at the secret file.
+	traversal := "../" + filepath.Base(secretDir) + "/secret.txt"
+	resp := &Response{Template: traversal}
+
+	_, err := f.Format(ctx, resp)
+	if err == nil {
+		t.Fatal("expected error for path traversal attempt, got nil")
+	}
+}
+
 func TestHTMLFormatterNoTemplate(t *testing.T) {
 	f := NewHTMLFormatter(t.TempDir())
 	resp := &Response{Data: nil}

@@ -5,6 +5,8 @@ import (
 	"context"
 	"fmt"
 	"html/template"
+	"path/filepath"
+	"strings"
 	"sync"
 )
 
@@ -60,7 +62,10 @@ func (f *HTMLFormatter) getTemplate(name string) (*template.Template, error) {
 		return tmpl, nil
 	}
 
-	path := f.dir + "/" + name
+	path := filepath.Join(f.dir, name)
+	if !strings.HasPrefix(path, filepath.Clean(f.dir)+string(filepath.Separator)) {
+		return nil, fmt.Errorf("html formatter: invalid template name %q", name)
+	}
 	tmpl, err := template.ParseFiles(path)
 	if err != nil {
 		return nil, fmt.Errorf("html formatter: parse %s: %w", path, err)
