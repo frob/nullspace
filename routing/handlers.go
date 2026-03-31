@@ -4,10 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"path/filepath"
 	"strings"
 
 	"github.com/frob/nullspace/data/file"
 	"github.com/frob/nullspace/kernel"
+	"github.com/frob/nullspace/nslog"
 	"github.com/frob/nullspace/request"
 	"github.com/frob/nullspace/response"
 )
@@ -43,17 +45,50 @@ func isBuiltin(name string) bool {
 	return false
 }
 
+// resolveID extracts and validates a path parameter for use as a file entity ID.
+// It returns a 400 response error if the param is missing or contains path traversal sequences.
+func resolveID(d *deps, ctx *request.Context, paramName string) (string, error) {
+	id := ctx.Param(paramName)
+	if id == "" {
+		return "", writeErr(d, ctx, http.StatusBadRequest, fmt.Errorf("missing parameter: %s", paramName))
+	}
+	if err := validateSegment(id); err != nil {
+		return "", writeErr(d, ctx, http.StatusBadRequest, err)
+	}
+	return id, nil
+}
+
+// validateSegment rejects values that could cause path traversal or other injection.
+func validateSegment(s string) error {
+	if strings.ContainsAny(s, "/\\") {
+		return fmt.Errorf("invalid parameter: must not contain path separators")
+	}
+	if filepath.Clean(s) != s || strings.Contains(s, "..") {
+		return fmt.Errorf("invalid parameter: must not contain path traversal sequences")
+	}
+	return nil
+}
+
+// writeErr writes an error response and returns a sentinel so callers can do `return writeErr(...)`.
+func writeErr(d *deps, ctx *request.Context, status int, err error) error {
+	return d.pipeline.Write(ctx.Context(), ctx.Writer, &response.Response{Status: status, Error: err})
+}
+
 // makeDataList returns a handler that lists entities from a collection.
 // Route config must set `collection`. Template is optional for HTML.
 func makeDataList(d *deps) request.HandlerFunc {
 	return func(ctx *request.Context) error {
 		route := ctx.Route()
 		collection := route.Meta["_collection"]
+		if collection == "" {
+			return writeErr(d, ctx, http.StatusInternalServerError, fmt.Errorf("route misconfigured: missing collection"))
+		}
 
 		entities, err := d.fileMod.List(ctx.Context(), collection)
 		if err != nil {
+			nslog.FromContext(ctx.Context()).Error("list failed", "collection", collection, "err", err)
 			return d.pipeline.Write(ctx.Context(), ctx.Writer,
-				&response.Response{Status: http.StatusInternalServerError, Error: err})
+				&response.Response{Status: http.StatusInternalServerError, Error: fmt.Errorf("internal error")})
 		}
 
 		items := entitiesToMaps(entities)
@@ -76,23 +111,22 @@ func makeDataGet(d *deps) request.HandlerFunc {
 	return func(ctx *request.Context) error {
 		route := ctx.Route()
 		collection := route.Meta["_collection"]
+		if collection == "" {
+			return writeErr(d, ctx, http.StatusInternalServerError, fmt.Errorf("route misconfigured: missing collection"))
+		}
 		paramName := route.Meta["_data_param"]
 		if paramName == "" {
 			paramName = "id"
 		}
 
-		id := ctx.Param(paramName)
-		if id == "" {
-			return d.pipeline.Write(ctx.Context(), ctx.Writer,
-				&response.Response{Status: http.StatusBadRequest,
-					Error: fmt.Errorf("missing parameter: %s", paramName)})
+		id, err := resolveID(d, ctx, paramName)
+		if err != nil {
+			return err
 		}
 
 		entity, err := d.fileMod.Read(ctx.Context(), collection, id)
 		if err != nil {
-			return d.pipeline.Write(ctx.Context(), ctx.Writer,
-				&response.Response{Status: http.StatusNotFound,
-					Error: fmt.Errorf("not found: %s/%s", collection, id)})
+			return writeErr(d, ctx, http.StatusNotFound, fmt.Errorf("not found: %s/%s", collection, id))
 		}
 
 		data := entityToMap(entity)
@@ -110,22 +144,25 @@ func makeDataCreate(d *deps) request.HandlerFunc {
 	return func(ctx *request.Context) error {
 		route := ctx.Route()
 		collection := route.Meta["_collection"]
+		if collection == "" {
+			return writeErr(d, ctx, http.StatusInternalServerError, fmt.Errorf("route misconfigured: missing collection"))
+		}
 
 		entity, err := entityFromBody(ctx)
 		if err != nil {
-			return d.pipeline.Write(ctx.Context(), ctx.Writer,
-				&response.Response{Status: http.StatusBadRequest, Error: err})
+			return writeErr(d, ctx, http.StatusBadRequest, err)
 		}
 
 		if entity.ID == "" {
-			return d.pipeline.Write(ctx.Context(), ctx.Writer,
-				&response.Response{Status: http.StatusBadRequest,
-					Error: fmt.Errorf("missing 'id' field")})
+			return writeErr(d, ctx, http.StatusBadRequest, fmt.Errorf("missing 'id' field"))
+		}
+		if err := validateSegment(entity.ID); err != nil {
+			return writeErr(d, ctx, http.StatusBadRequest, err)
 		}
 
 		if err := d.fileMod.Write(ctx.Context(), collection, entity.ID, entity); err != nil {
-			return d.pipeline.Write(ctx.Context(), ctx.Writer,
-				&response.Response{Status: http.StatusInternalServerError, Error: err})
+			nslog.FromContext(ctx.Context()).Error("write failed", "collection", collection, "id", entity.ID, "err", err)
+			return writeErr(d, ctx, http.StatusInternalServerError, fmt.Errorf("internal error"))
 		}
 
 		resp := response.NewResponse(http.StatusCreated, map[string]any{
@@ -141,28 +178,27 @@ func makeDataUpdate(d *deps) request.HandlerFunc {
 	return func(ctx *request.Context) error {
 		route := ctx.Route()
 		collection := route.Meta["_collection"]
+		if collection == "" {
+			return writeErr(d, ctx, http.StatusInternalServerError, fmt.Errorf("route misconfigured: missing collection"))
+		}
 		paramName := route.Meta["_data_param"]
 		if paramName == "" {
 			paramName = "id"
 		}
 
-		id := ctx.Param(paramName)
-		if id == "" {
-			return d.pipeline.Write(ctx.Context(), ctx.Writer,
-				&response.Response{Status: http.StatusBadRequest,
-					Error: fmt.Errorf("missing parameter: %s", paramName)})
+		id, err := resolveID(d, ctx, paramName)
+		if err != nil {
+			return err
 		}
 
 		entity, err := entityFromBody(ctx)
 		if err != nil {
-			return d.pipeline.Write(ctx.Context(), ctx.Writer,
-				&response.Response{Status: http.StatusBadRequest, Error: err})
+			return writeErr(d, ctx, http.StatusBadRequest, err)
 		}
 		entity.ID = id
 
 		if err := d.fileMod.Write(ctx.Context(), collection, id, entity); err != nil {
-			return d.pipeline.Write(ctx.Context(), ctx.Writer,
-				&response.Response{Status: http.StatusInternalServerError, Error: err})
+			return writeErr(d, ctx, http.StatusInternalServerError, err)
 		}
 
 		resp := response.NewResponse(http.StatusOK, map[string]any{
@@ -178,22 +214,21 @@ func makeDataDelete(d *deps) request.HandlerFunc {
 	return func(ctx *request.Context) error {
 		route := ctx.Route()
 		collection := route.Meta["_collection"]
+		if collection == "" {
+			return writeErr(d, ctx, http.StatusInternalServerError, fmt.Errorf("route misconfigured: missing collection"))
+		}
 		paramName := route.Meta["_data_param"]
 		if paramName == "" {
 			paramName = "id"
 		}
 
-		id := ctx.Param(paramName)
-		if id == "" {
-			return d.pipeline.Write(ctx.Context(), ctx.Writer,
-				&response.Response{Status: http.StatusBadRequest,
-					Error: fmt.Errorf("missing parameter: %s", paramName)})
+		id, err := resolveID(d, ctx, paramName)
+		if err != nil {
+			return err
 		}
 
 		if err := d.fileMod.Delete(ctx.Context(), collection, id); err != nil {
-			return d.pipeline.Write(ctx.Context(), ctx.Writer,
-				&response.Response{Status: http.StatusNotFound,
-					Error: fmt.Errorf("not found: %s/%s", collection, id)})
+			return writeErr(d, ctx, http.StatusNotFound, fmt.Errorf("not found: %s/%s", collection, id))
 		}
 
 		resp := response.NewResponse(http.StatusOK, map[string]any{
