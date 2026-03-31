@@ -181,9 +181,9 @@ func TestMergeDefaultsNilDefaults(t *testing.T) {
 
 func TestDecodeMapToStruct(t *testing.T) {
 	type cfg struct {
-		Dir    string `json:"dir"`
-		Port   int    `json:"port"`
-		Debug  bool   `json:"debug"`
+		Dir   string `json:"dir"`
+		Port  int    `json:"port"`
+		Debug bool   `json:"debug"`
 	}
 
 	src := map[string]any{
@@ -211,7 +211,7 @@ func TestDecodeMapToStruct(t *testing.T) {
 func TestApplyModulesSection(t *testing.T) {
 	raw := map[string]any{
 		"modules": map[string]any{
-			"data.static":     true,
+			"data.static":        true,
 			"format.query_param": false,
 		},
 	}

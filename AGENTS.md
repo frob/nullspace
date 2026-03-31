@@ -17,11 +17,12 @@ task check         # fmt + vet + test
 Hexagonal. Kernel at center, everything else is a module.
 
 - **Kernel** (`kernel/`) — module registry, hook bus, config, service locator
-- **Routing** (`routing/`) — TOML route config, handler registry, built-in handlers
-- **Request** (`request/`) — HTTP adapter, router, middleware, context
-- **Response** (`response/`) — format resolution, formatters, pipeline
-- **Data** (`data/`) — static files, file entities, SQL
-- **Logging** (`nslog/`) — slog adapter, per-request loggers
+- **Routing** (`core/routing/`) — TOML route config, handler registry, built-in handlers
+- **Request** (`core/request/`) — HTTP adapter, router, middleware, context
+- **Response** (`core/response/`) — format resolution, formatters, pipeline
+- **Data** (`module/data/`) — static files, file entities, SQL
+- **Logging** (`core/nslog/`) — slog adapter, per-request loggers
+- **Session** (`module/session/`) — session management, memory and SQL stores
 
 ## Key patterns
 

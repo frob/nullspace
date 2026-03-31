@@ -6,7 +6,7 @@ The data packages provide pluggable data storage modules.
 data/static
 -----------
 
-``import "github.com/frob/nullspace/data/static"``
+``import "github.com/frob/nullspace/module/data/static"``
 
 Serves static files from a directory as a request fallback.
 
@@ -28,7 +28,7 @@ and ``DataProvider``.
 data/file
 ---------
 
-``import "github.com/frob/nullspace/data/file"``
+``import "github.com/frob/nullspace/module/data/file"``
 
 File-based entity storage. One file per record, directory per collection.
 
@@ -83,7 +83,7 @@ All CRUD operations fire ``data.before_read``/``data.after_read`` or
 data/sql
 --------
 
-``import "github.com/frob/nullspace/data/sql"``
+``import "github.com/frob/nullspace/module/data/sql"``
 
 SQL database access via ``database/sql`` with SQLite default.
 

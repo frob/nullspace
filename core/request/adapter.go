@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/frob/nullspace/core/nslog"
+	"github.com/frob/nullspace/core/response"
 	"github.com/frob/nullspace/kernel"
-	"github.com/frob/nullspace/nslog"
-	"github.com/frob/nullspace/response"
 )
 
 // AdapterConfig holds the HTTP adapter's configuration.

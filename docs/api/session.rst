@@ -1,7 +1,7 @@
 session
 =======
 
-``import "github.com/frob/nullspace/session"``
+``import "github.com/frob/nullspace/module/session"``
 
 The session package provides server-side session management. It is an opt-in
 module (``DefaultEnabled: false``) that registers named middleware on the

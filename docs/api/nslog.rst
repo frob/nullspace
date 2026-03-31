@@ -1,7 +1,7 @@
 nslog
 =====
 
-``import "github.com/frob/nullspace/nslog"``
+``import "github.com/frob/nullspace/core/nslog"``
 
 The nslog package provides the logging module and context helpers for
 per-request logger propagation.

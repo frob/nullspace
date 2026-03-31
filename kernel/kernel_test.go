@@ -8,14 +8,14 @@ import (
 
 // testModule is a minimal Module for testing lifecycle and hooks.
 type testModule struct {
-	name       string
-	initCalled bool
+	name        string
+	initCalled  bool
 	startCalled bool
 	stopCalled  bool
-	initErr    error
-	startErr   error
-	stopErr    error
-	initFunc   func(k *Kernel) error
+	initErr     error
+	startErr    error
+	stopErr     error
+	initFunc    func(k *Kernel) error
 }
 
 func (m *testModule) Name() string { return m.name }

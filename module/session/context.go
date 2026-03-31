@@ -1,6 +1,6 @@
 package session
 
-import "github.com/frob/nullspace/request"
+import "github.com/frob/nullspace/core/request"
 
 const stateKey = "session"
 

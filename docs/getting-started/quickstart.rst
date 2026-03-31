@@ -78,9 +78,9 @@ Create ``main.go``:
         "syscall"
 
         "github.com/frob/nullspace/kernel"
-        "github.com/frob/nullspace/nslog"
-        "github.com/frob/nullspace/request"
-        "github.com/frob/nullspace/response"
+        "github.com/frob/nullspace/core/nslog"
+        "github.com/frob/nullspace/core/request"
+        "github.com/frob/nullspace/core/response"
     )
 
     func main() {
@@ -169,7 +169,7 @@ static module:
 
 .. code-block:: go
 
-    import "github.com/frob/nullspace/data/static"
+    import "github.com/frob/nullspace/module/data/static"
 
     k.Use(static.New())
 

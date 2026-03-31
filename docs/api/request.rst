@@ -1,7 +1,7 @@
 request
 =======
 
-``import "github.com/frob/nullspace/request"``
+``import "github.com/frob/nullspace/core/request"``
 
 The request package provides the HTTP adapter, router, middleware chain, and
 request context.

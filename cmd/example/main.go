@@ -30,13 +30,13 @@ import (
 
 	"github.com/frob/nullspace/cmd/example/modules/auth"
 	"github.com/frob/nullspace/cmd/example/modules/forms"
-	"github.com/frob/nullspace/data/file"
-	"github.com/frob/nullspace/data/static"
+	"github.com/frob/nullspace/core/nslog"
+	"github.com/frob/nullspace/core/request"
+	"github.com/frob/nullspace/core/response"
+	"github.com/frob/nullspace/core/routing"
 	"github.com/frob/nullspace/kernel"
-	"github.com/frob/nullspace/nslog"
-	"github.com/frob/nullspace/request"
-	"github.com/frob/nullspace/response"
-	"github.com/frob/nullspace/routing"
+	"github.com/frob/nullspace/module/data/file"
+	"github.com/frob/nullspace/module/data/static"
 )
 
 func main() {
@@ -100,9 +100,9 @@ func main() {
 // that the declarative routing config wires up.
 type appModule struct{}
 
-func (m *appModule) Name() string                       { return "app" }
-func (m *appModule) Start(ctx context.Context) error    { return nil }
-func (m *appModule) Stop(ctx context.Context) error     { return nil }
+func (m *appModule) Name() string                    { return "app" }
+func (m *appModule) Start(ctx context.Context) error { return nil }
+func (m *appModule) Stop(ctx context.Context) error  { return nil }
 
 func (m *appModule) Init(k *kernel.Kernel) error {
 	reg, err := kernel.GetResource[*routing.Registry](k, "routing.registry")

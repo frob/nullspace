@@ -9,11 +9,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/frob/nullspace/data/file"
+	"github.com/frob/nullspace/core/nslog"
+	"github.com/frob/nullspace/core/request"
+	"github.com/frob/nullspace/core/response"
 	"github.com/frob/nullspace/kernel"
-	"github.com/frob/nullspace/nslog"
-	"github.com/frob/nullspace/request"
-	"github.com/frob/nullspace/response"
+	"github.com/frob/nullspace/module/data/file"
 )
 
 // --- Registry Tests ---

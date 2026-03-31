@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/frob/nullspace/core/nslog"
 	"github.com/frob/nullspace/kernel"
-	"github.com/frob/nullspace/nslog"
 )
 
 func setupPipeline(t *testing.T) (*Pipeline, *kernel.Kernel) {

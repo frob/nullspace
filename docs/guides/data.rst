@@ -61,7 +61,7 @@ Serves files from a directory as a request fallback.
 
 .. code-block:: go
 
-    import "github.com/frob/nullspace/data/static"
+    import "github.com/frob/nullspace/module/data/static"
 
     k.Use(static.New())
 
@@ -96,7 +96,7 @@ Stores records as files on disk. Directory = collection, filename = entity ID.
 
 .. code-block:: go
 
-    import "github.com/frob/nullspace/data/file"
+    import "github.com/frob/nullspace/module/data/file"
 
     fileMod := file.New()
     k.Use(fileMod)
@@ -226,7 +226,7 @@ driver.
 
 .. code-block:: go
 
-    import dbmod "github.com/frob/nullspace/data/sql"
+    import dbmod "github.com/frob/nullspace/module/data/sql"
 
     k.Use(dbmod.New())
 

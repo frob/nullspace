@@ -9,10 +9,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/frob/nullspace/core/nslog"
+	"github.com/frob/nullspace/core/request"
+	"github.com/frob/nullspace/core/routing"
 	"github.com/frob/nullspace/kernel"
-	"github.com/frob/nullspace/nslog"
-	"github.com/frob/nullspace/request"
-	"github.com/frob/nullspace/routing"
 )
 
 // — MemoryStore tests —

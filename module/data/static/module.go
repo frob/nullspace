@@ -13,8 +13,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/frob/nullspace/core/request"
 	"github.com/frob/nullspace/kernel"
-	"github.com/frob/nullspace/request"
 )
 
 // Config holds the static file module's configuration.

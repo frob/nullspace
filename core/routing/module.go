@@ -7,10 +7,10 @@ import (
 
 	toml "github.com/pelletier/go-toml/v2"
 
-	"github.com/frob/nullspace/data/file"
+	"github.com/frob/nullspace/core/request"
+	"github.com/frob/nullspace/core/response"
 	"github.com/frob/nullspace/kernel"
-	"github.com/frob/nullspace/request"
-	"github.com/frob/nullspace/response"
+	"github.com/frob/nullspace/module/data/file"
 )
 
 // Module provides declarative TOML-based route configuration.

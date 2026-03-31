@@ -37,27 +37,25 @@ nullspace/
 │   ├── kernel.go
 │   ├── hook.go
 │   └── port.go
-├── request/
-│   ├── adapter.go
-│   ├── context.go
-│   └── middleware.go
-├── response/
-│   ├── response.go
-│   ├── formatter.go
-│   ├── pipeline.go
-│   ├── json.go
-│   └── html.go
-├── data/
-│   ├── port.go
-│   ├── sql/
-│   ├── file/
-│   └── static/
-├── log/
-│   ├── port.go
-│   └── slog.go
-├── config/
-│   ├── config.go
-│   └── snapshot.go
+├── core/
+│   ├── request/
+│   │   ├── adapter.go
+│   │   ├── context.go
+│   │   └── middleware.go
+│   ├── response/
+│   │   ├── response.go
+│   │   ├── formatter.go
+│   │   ├── pipeline.go
+│   │   ├── json.go
+│   │   └── html.go
+│   ├── routing/
+│   └── nslog/
+├── module/
+│   ├── data/
+│   │   ├── sql/
+│   │   ├── file/
+│   │   └── static/
+│   └── session/
 ├── go.mod
 └── go.sum
 ```

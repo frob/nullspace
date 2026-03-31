@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/frob/nullspace/request"
+	"github.com/frob/nullspace/core/request"
 )
 
 // Registry holds named handlers and middleware that TOML routes reference.

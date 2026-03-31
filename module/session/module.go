@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/frob/nullspace/core/request"
+	"github.com/frob/nullspace/core/routing"
 	"github.com/frob/nullspace/kernel"
-	"github.com/frob/nullspace/request"
-	"github.com/frob/nullspace/routing"
 )
 
 // Config holds the session module's configuration.

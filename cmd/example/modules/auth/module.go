@@ -16,10 +16,10 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/frob/nullspace/core/request"
+	"github.com/frob/nullspace/core/response"
+	"github.com/frob/nullspace/core/routing"
 	"github.com/frob/nullspace/kernel"
-	"github.com/frob/nullspace/request"
-	"github.com/frob/nullspace/response"
-	"github.com/frob/nullspace/routing"
 )
 
 //go:embed routes.toml

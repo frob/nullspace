@@ -7,8 +7,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/frob/nullspace/core/nslog"
 	"github.com/frob/nullspace/kernel"
-	"github.com/frob/nullspace/nslog"
 )
 
 // --- Router Tests ---
@@ -428,9 +428,9 @@ type hookTracker struct {
 	hooks *[]string
 }
 
-func (m *hookTracker) Name() string                       { return "hook_tracker" }
-func (m *hookTracker) Start(ctx context.Context) error    { return nil }
-func (m *hookTracker) Stop(ctx context.Context) error     { return nil }
+func (m *hookTracker) Name() string                    { return "hook_tracker" }
+func (m *hookTracker) Start(ctx context.Context) error { return nil }
+func (m *hookTracker) Stop(ctx context.Context) error  { return nil }
 func (m *hookTracker) Init(k *kernel.Kernel) error {
 	for _, name := range []string{
 		"request.received", "request.routed", "request.before",

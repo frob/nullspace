@@ -1,7 +1,7 @@
 routing
 =======
 
-``import "github.com/frob/nullspace/routing"``
+``import "github.com/frob/nullspace/core/routing"``
 
 The routing package provides declarative TOML-based route configuration
 with a handler/middleware registry, built-in handlers, and collections.

@@ -8,9 +8,9 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/frob/nullspace/core/nslog"
+	"github.com/frob/nullspace/core/request"
 	"github.com/frob/nullspace/kernel"
-	"github.com/frob/nullspace/nslog"
-	"github.com/frob/nullspace/request"
 )
 
 func setupTestAdapter(t *testing.T, staticDir string) (*request.Adapter, *kernel.Kernel) {

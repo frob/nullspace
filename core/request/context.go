@@ -4,8 +4,8 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/frob/nullspace/core/nslog"
 	"github.com/frob/nullspace/kernel"
-	"github.com/frob/nullspace/nslog"
 )
 
 // Context is the framework's request context. It wraps the standard

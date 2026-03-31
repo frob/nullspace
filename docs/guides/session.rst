@@ -12,7 +12,7 @@ Add the session module to your kernel **after** the routing module:
 
 .. code-block:: go
 
-    import "github.com/frob/nullspace/session"
+    import "github.com/frob/nullspace/module/session"
 
     k.Use(nslog.New())
     k.Use(request.NewAdapter())
@@ -149,7 +149,7 @@ Use ``session.From`` to retrieve the loaded session inside a handler:
 
 .. code-block:: go
 
-    import "github.com/frob/nullspace/session"
+    import "github.com/frob/nullspace/module/session"
 
     func profileHandler(ctx *request.Context) error {
         sess, ok := session.From(ctx)

@@ -81,9 +81,9 @@ import (
     "syscall"
 
     "github.com/frob/nullspace/kernel"
-    "github.com/frob/nullspace/nslog"
-    "github.com/frob/nullspace/request"
-    "github.com/frob/nullspace/response"
+    "github.com/frob/nullspace/core/nslog"
+    "github.com/frob/nullspace/core/request"
+    "github.com/frob/nullspace/core/response"
 )
 
 func main() {
@@ -153,7 +153,7 @@ Each module can own its routes via an embedded `routes.toml`:
 var routesData []byte
 
 func (m *Module) Init(k *kernel.Kernel) error {
-    routingMod, _ := kernel.GetResource[*routing.Module](k, "routing")
+    routingMod, _ := kernel.GetResource[*routing.Module](k, "routing")  // core/routing
     routingMod.LoadRoutes(routesData)
     return nil
 }
@@ -345,14 +345,17 @@ nullspace/
 │   ├── nullspace/      Installable binary (serve / init / routes)
 │   └── example/        Example application (library usage)
 ├── kernel/             Core: module registry, hook bus, config, service locator
-├── nslog/              Logging module (slog adapter, per-request loggers)
-├── request/            HTTP adapter, router, middleware, context
-├── response/           Format resolution, JSON/HTML formatters, pipeline
-├── routing/            Declarative TOML routing, handler registry, built-in handlers
-├── data/
-│   ├── static/         Static file serving
-│   ├── file/           File-based entity storage
-│   └── sql/            SQL with SQLite default
+├── core/               Required framework modules
+│   ├── nslog/          Logging module (slog adapter, per-request loggers)
+│   ├── request/        HTTP adapter, router, middleware, context
+│   ├── response/       Format resolution, JSON/HTML formatters, pipeline
+│   └── routing/        Declarative TOML routing, handler registry, built-in handlers
+├── module/             Optional, pluggable modules
+│   ├── data/
+│   │   ├── static/     Static file serving
+│   │   ├── file/       File-based entity storage
+│   │   └── sql/        SQL with SQLite default
+│   └── session/        Session management (memory and SQL stores)
 ├── docs/               Documentation (Sphinx / Read the Docs)
 └── specs/              Architecture specifications
 ```

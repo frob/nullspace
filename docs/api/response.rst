@@ -1,7 +1,7 @@
 response
 ========
 
-``import "github.com/frob/nullspace/response"``
+``import "github.com/frob/nullspace/core/response"``
 
 The response package provides format resolution, formatters, and the response
 pipeline.
