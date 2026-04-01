@@ -117,7 +117,9 @@ func (m *Module) Create(ctx *request.Context) (*Session, error) {
 	if err != nil {
 		return nil, fmt.Errorf("create session: %w", err)
 	}
-	m.setCookie(ctx, sess.ID)
+	if !ctx.Hijacked() {
+		m.setCookie(ctx, sess.ID)
+	}
 	ctx.SetState(stateKey, sess)
 	_ = m.kernel.Fire("session.created", ctx.Context())
 	return sess, nil
@@ -133,13 +135,15 @@ func (m *Module) Destroy(ctx *request.Context) error {
 	if err := m.store.Delete(ctx.Context(), cookie.Value); err != nil {
 		return fmt.Errorf("destroy session: %w", err)
 	}
-	http.SetCookie(ctx.Writer, &http.Cookie{
-		Name:     m.cfg.Cookie,
-		Value:    "",
-		Path:     m.cfg.Path,
-		MaxAge:   -1,
-		HttpOnly: true,
-	})
+	if !ctx.Hijacked() {
+		http.SetCookie(ctx.Writer, &http.Cookie{
+			Name:     m.cfg.Cookie,
+			Value:    "",
+			Path:     m.cfg.Path,
+			MaxAge:   -1,
+			HttpOnly: true,
+		})
+	}
 	ctx.SetState(stateKey, nil)
 	_ = m.kernel.Fire("session.destroyed", ctx.Context())
 	return nil

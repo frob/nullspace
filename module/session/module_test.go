@@ -447,6 +447,75 @@ session = true
 	}
 }
 
+func TestCreateSkipsCookieWhenHijacked(t *testing.T) {
+	adapter, sessMod, _ := setupKernel(t, `
+[modules]
+session = true
+`)
+
+	adapter.Router().Post("/ws-login", func(ctx *request.Context) error {
+		ctx.Hijack()
+		sess, err := sessMod.Create(ctx)
+		if err != nil {
+			return err
+		}
+		sess.Set("user", "bob")
+		ctx.Writer.WriteHeader(http.StatusOK)
+		return nil
+	})
+
+	req := httptest.NewRequest("POST", "/ws-login", nil)
+	w := httptest.NewRecorder()
+	adapter.ServeHTTP(w, req)
+
+	// Session should be created in the store but no cookie set.
+	cookies := w.Result().Cookies()
+	for _, c := range cookies {
+		if c.Name == "ns_session" {
+			t.Fatal("expected no session cookie when hijacked")
+		}
+	}
+}
+
+func TestDestroySkipsCookieWhenHijacked(t *testing.T) {
+	adapter, sessMod, _ := setupKernel(t, `
+[modules]
+session = true
+`)
+
+	// Pre-create a session.
+	ctx := context.Background()
+	stored, _ := sessMod.Store().Create(ctx)
+
+	adapter.Router().Post("/ws-logout", func(ctx *request.Context) error {
+		ctx.Hijack()
+		if err := sessMod.Destroy(ctx); err != nil {
+			return err
+		}
+		ctx.Writer.WriteHeader(http.StatusOK)
+		return nil
+	})
+
+	req := httptest.NewRequest("POST", "/ws-logout", nil)
+	req.AddCookie(&http.Cookie{Name: "ns_session", Value: stored.ID})
+	w := httptest.NewRecorder()
+	adapter.ServeHTTP(w, req)
+
+	// Session should be deleted from the store.
+	loaded, _ := sessMod.Store().Load(ctx, stored.ID)
+	if loaded != nil {
+		t.Fatal("expected session to be deleted")
+	}
+
+	// No Set-Cookie header should be written when hijacked.
+	cookies := w.Result().Cookies()
+	for _, c := range cookies {
+		if c.Name == "ns_session" {
+			t.Fatal("expected no cookie clear header when hijacked")
+		}
+	}
+}
+
 func TestCreateAndDestroySession(t *testing.T) {
 	adapter, sessMod, k := setupKernel(t, `
 [modules]

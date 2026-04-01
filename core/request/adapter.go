@@ -205,6 +205,13 @@ func (a *Adapter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// 8. Execute handler.
 	err := handler(fctx)
 
+	// If the handler hijacked the connection (e.g., WebSocket upgrade),
+	// the response writer is no longer valid. Skip post-handler hooks
+	// and error responses.
+	if fctx.Hijacked() {
+		return
+	}
+
 	// 9. Fire request.after.
 	_ = a.kernel.Fire("request.after", ctx)
 

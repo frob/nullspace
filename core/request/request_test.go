@@ -491,6 +491,86 @@ func TestAdapterRequestLogger(t *testing.T) {
 	}
 }
 
+func TestContextHijack(t *testing.T) {
+	ctx := newContext(nil, nil, context.Background())
+
+	if ctx.Hijacked() {
+		t.Fatal("expected not hijacked initially")
+	}
+
+	ctx.Hijack()
+
+	if !ctx.Hijacked() {
+		t.Fatal("expected hijacked after Hijack()")
+	}
+}
+
+func TestAdapterHijackedSkipsPostHooks(t *testing.T) {
+	k := kernel.New()
+	logMod := nslog.New()
+	adapter := NewAdapter()
+
+	k.Use(logMod)
+	k.Use(adapter)
+
+	var hooksFired []string
+	testMod := &hookTracker{hooks: &hooksFired}
+	k.Use(testMod)
+
+	ctx := context.Background()
+	if err := k.Init(ctx); err != nil {
+		t.Fatalf("Init: %v", err)
+	}
+
+	adapter.Router().Get("/ws", func(ctx *Context) error {
+		ctx.Hijack()
+		return nil
+	})
+
+	req := httptest.NewRequest("GET", "/ws", nil)
+	w := httptest.NewRecorder()
+
+	adapter.ServeHTTP(w, req)
+
+	// Should fire: received, routed, before — but NOT after or complete.
+	for _, h := range hooksFired {
+		if h == "request.after" || h == "request.complete" {
+			t.Fatalf("hook %s should not fire after hijack", h)
+		}
+	}
+
+	// Verify the pre-handler hooks did fire.
+	fired := map[string]bool{}
+	for _, h := range hooksFired {
+		fired[h] = true
+	}
+	for _, expected := range []string{"request.received", "request.routed", "request.before"} {
+		if !fired[expected] {
+			t.Fatalf("expected hook %s to fire", expected)
+		}
+	}
+}
+
+func TestAdapterHijackedSkips500OnError(t *testing.T) {
+	adapter, _ := setupTestAdapter(t)
+
+	adapter.Router().Get("/ws-err", func(ctx *Context) error {
+		ctx.Hijack()
+		return fmt.Errorf("handler error after hijack")
+	})
+
+	req := httptest.NewRequest("GET", "/ws-err", nil)
+	w := httptest.NewRecorder()
+
+	adapter.ServeHTTP(w, req)
+
+	// The adapter should not write a 500 to a hijacked connection.
+	// Since nothing was written, the default status from httptest is 200.
+	if w.Body.Len() != 0 {
+		t.Fatalf("expected no body written after hijack, got %q", w.Body.String())
+	}
+}
+
 func TestResponseCaptureStatus(t *testing.T) {
 	w := httptest.NewRecorder()
 	capture := &responseCapture{ResponseWriter: w, status: http.StatusOK}

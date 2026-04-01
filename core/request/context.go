@@ -16,10 +16,11 @@ type Context struct {
 	Request *http.Request
 	Writer  http.ResponseWriter
 
-	ctx    context.Context
-	params map[string]string
-	route  *RouteMatch
-	state  map[string]any
+	ctx      context.Context
+	params   map[string]string
+	route    *RouteMatch
+	state    map[string]any
+	hijacked bool
 }
 
 // newContext creates a framework Context from an HTTP request.
@@ -75,4 +76,17 @@ func (c *Context) State(key string) (any, bool) {
 // SetState stores a value in the request-scoped state bag.
 func (c *Context) SetState(key string, val any) {
 	c.state[key] = val
+}
+
+// Hijack marks the connection as hijacked. Call this before upgrading
+// to a different protocol (e.g., WebSocket). Once hijacked, the adapter
+// skips post-handler hooks and error responses, and middleware should
+// skip any response writes.
+func (c *Context) Hijack() {
+	c.hijacked = true
+}
+
+// Hijacked reports whether the connection has been marked as hijacked.
+func (c *Context) Hijacked() bool {
+	return c.hijacked
 }
