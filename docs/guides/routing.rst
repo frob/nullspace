@@ -52,6 +52,7 @@ Field                         Description
 ``data_param``                Route param for entity lookup (defaults to ``"id"``)
 ``redirect``                  Target URL for the ``redirect`` handler
 ``status_code``               HTTP status for redirects (defaults to 303)
+``extra``                     Arbitrary key-value metadata for modules (``{key = "val"}``)
 ============================  ==========================================================
 
 Route Groups

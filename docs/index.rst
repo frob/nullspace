@@ -35,6 +35,7 @@ middleware.
    guides/custom-modules
    guides/session
    guides/httpsecurity
+   guides/websocket
    guides/example-modules
    guides/deployment
 
@@ -49,4 +50,5 @@ middleware.
    api/nslog
    api/session
    api/httpsecurity
+   api/websocket
    api/data

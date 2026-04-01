@@ -20,6 +20,12 @@ format = "markdown"
 [modules]
 "auth" = true
 "forms" = true
+"websocket" = true
+"chat" = true
+
+# WebSocket config.
+[websocket]
+insecure_skip_verify = true
 
 # Basic auth config — credentials and prefix.
 [auth]
@@ -95,6 +101,19 @@ write_middleware = ["auth"]
 group = "api"
 path = "/health"
 handler = "health.check"
+
+# Chat page (HTML).
+[[routing.routes]]
+group = "pages"
+path = "/chat"
+handler = "chat.page"
+
+# WebSocket chat endpoint.
+[[routing.routes]]
+path = "/ws/chat"
+handler = "ws.chat"
+middleware = ["chat.name"]
+extra = { ws_rooms = "chat" }
 
 # Redirect example.
 [[routing.routes]]

@@ -9,6 +9,7 @@
         <a href="/">Home</a>
         <a href="/posts">Posts</a>
         <a href="/forms/contact">Contact</a>
+        <a href="/chat">Chat</a>
         <a href="/api/posts">API</a>
     </nav>
     <h1>Nullspace Example</h1>
@@ -19,6 +20,7 @@
         <li><a href="/api/posts">JSON API</a> — same data, different format</li>
         <li><a href="/api/posts?pretty=true">Pretty JSON</a> — with ?pretty=true</li>
         <li><a href="/forms/contact">Contact form</a> — webform module with validation and storage</li>
+        <li><a href="/chat">Chat room</a> — real-time WebSocket chat</li>
         <li><a href="/api/admin/posts">Admin API</a> — protected by Basic Auth (admin / secret)</li>
         <li><a href="/css/style.css">Static files</a> — served from /public</li>
         <li><a href="/api/health">Health check</a> — kernel status</li>
@@ -27,6 +29,7 @@
     <ul>
         <li><strong>Auth</strong> — Basic auth middleware protecting /api/admin/* routes</li>
         <li><strong>Forms</strong> — Declarative webforms defined in TOML config with validation, file storage, and custom hooks</li>
+        <li><strong>Chat</strong> — Real-time chat room using the WebSocket module with room-based broadcast</li>
     </ul>
 </body>
 </html>

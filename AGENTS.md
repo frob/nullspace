@@ -23,6 +23,8 @@ Hexagonal. Kernel at center, everything else is a module.
 - **Data** (`module/data/`) — static files, file entities, SQL
 - **Logging** (`core/nslog/`) — slog adapter, per-request loggers
 - **Session** (`module/session/`) — session management, memory and SQL stores
+- **HTTP Security** (`module/httpsecurity/`) — security headers, CSRF, HTTPS redirect
+- **WebSocket** (`module/websocket/`) — WS upgrade, connection manager, rooms, broadcast
 
 ## Key patterns
 
@@ -36,8 +38,8 @@ Hexagonal. Kernel at center, everything else is a module.
 
 ## Module registration order matters
 
-Logging → Request adapter → Response pipeline → Format resolvers → Data modules → Routing → Application modules
+Logging → Request adapter → Response pipeline → Format resolvers → Data modules → Routing → WebSocket → Application modules
 
 ## Tests
 
-128 tests across 8 packages. Run `task test`. All data tests use temp dirs. No external services needed.
+Run `task test`. All data tests use temp dirs. No external services needed.

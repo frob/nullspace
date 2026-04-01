@@ -1,10 +1,12 @@
 package request
 
 import (
+	"bufio"
 	"context"
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
+	"net"
 	"net/http"
 
 	"github.com/frob/nullspace/core/nslog"
@@ -274,6 +276,15 @@ func (w *responseCapture) Write(b []byte) (int, error) {
 		w.written = true
 	}
 	return w.ResponseWriter.Write(b)
+}
+
+// Hijack implements http.Hijacker by delegating to the underlying writer.
+// This enables WebSocket upgrades through the response capture wrapper.
+func (w *responseCapture) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	if hj, ok := w.ResponseWriter.(http.Hijacker); ok {
+		return hj.Hijack()
+	}
+	return nil, nil, fmt.Errorf("underlying ResponseWriter does not implement http.Hijacker")
 }
 
 // generateRequestID creates a short random hex ID for request tracing.

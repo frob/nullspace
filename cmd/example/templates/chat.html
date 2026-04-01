@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat — Nullspace Example</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        #chat-container {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+        #messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+        .msg { margin-bottom: 0.5rem; }
+        .msg .user { font-weight: bold; }
+        .msg .time { color: #999; font-size: 0.8rem; margin-left: 0.5rem; }
+        .msg.system { color: #666; font-style: italic; }
+        #input-area {
+            display: flex;
+            border-top: 1px solid #ddd;
+            padding: 0.5rem;
+            gap: 0.5rem;
+        }
+        #input-area input {
+            flex: 1;
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-size: 1rem;
+        }
+        #input-area button {
+            padding: 0.5rem 1rem;
+            background: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        #input-area button:hover { background: #0055aa; }
+        #status { color: #999; font-size: 0.85rem; margin-bottom: 0.5rem; }
+        #name-form { margin-bottom: 1rem; }
+        #name-form input {
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-size: 1rem;
+            margin-right: 0.5rem;
+        }
+        #name-form button {
+            padding: 0.5rem 1rem;
+            background: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="/">Home</a>
+        <a href="/posts">Posts</a>
+        <a href="/forms/contact">Contact</a>
+        <a href="/chat">Chat</a>
+        <a href="/api/posts">API</a>
+    </nav>
+    <h1>Chat</h1>
+
+    <div id="name-form">
+        <label>Your name: </label>
+        <input type="text" id="username" placeholder="anonymous" autofocus>
+        <button onclick="connect()">Join</button>
+    </div>
+
+    <div id="chat-container" style="display:none;">
+        <div id="status">Connecting...</div>
+        <div id="messages"></div>
+        <div id="input-area">
+            <input type="text" id="msg" placeholder="Type a message..." onkeydown="if(event.key==='Enter')send()">
+            <button onclick="send()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        var ws;
+        var username = 'anonymous';
+
+        function connect() {
+            var nameInput = document.getElementById('username');
+            username = nameInput.value.trim() || 'anonymous';
+
+            document.getElementById('name-form').style.display = 'none';
+            document.getElementById('chat-container').style.display = 'flex';
+
+            var proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            var url = proto + '//' + location.host + '/ws/chat?name=' + encodeURIComponent(username);
+            ws = new WebSocket(url);
+
+            ws.onopen = function() {
+                document.getElementById('status').textContent = 'Connected as ' + username;
+                document.getElementById('msg').focus();
+            };
+
+            ws.onmessage = function(e) {
+                var msg = JSON.parse(e.data);
+                var div = document.createElement('div');
+                div.className = 'msg';
+                if (msg.type === 'system') {
+                    div.className += ' system';
+                    div.textContent = msg.text;
+                } else {
+                    var t = new Date(msg.timestamp).toLocaleTimeString();
+                    div.innerHTML = '<span class="user">' + esc(msg.user) + ':</span> ' +
+                        esc(msg.text) + '<span class="time">' + t + '</span>';
+                }
+                document.getElementById('messages').appendChild(div);
+                div.scrollIntoView();
+            };
+
+            ws.onclose = function() {
+                document.getElementById('status').textContent = 'Disconnected. Refresh to reconnect.';
+            };
+        }
+
+        function send() {
+            var input = document.getElementById('msg');
+            var text = input.value.trim();
+            if (text && ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(text);
+                input.value = '';
+            }
+        }
+
+        function esc(s) {
+            var d = document.createElement('div');
+            d.textContent = s;
+            return d.innerHTML;
+        }
+    </script>
+</body>
+</html>

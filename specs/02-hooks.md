@@ -59,6 +59,12 @@ Framework-defined hook points (modules may define additional ones):
 - `data.before_write` — before data write
 - `data.after_write` — after data write
 
+### WebSocket Lifecycle
+- `websocket.connected` — connection established after upgrade
+- `websocket.message` — message received (before handler)
+- `websocket.disconnected` — connection closed
+- `websocket.error` — non-clean close error
+
 ## Short-Circuit Behavior
 
 A hook handler can return a resolution signal to stop the chain:

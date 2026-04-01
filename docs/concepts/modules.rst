@@ -137,6 +137,11 @@ Key                           Type
 ``"data.file"``               ``*file.Module``
 ``"data.sql"``                ``*sql.Module``
 ``"db"``                      ``*sql.DB``
+``"session"``                 ``*session.Module``
+``"session.store"``           ``session.Store``
+``"http-security"``           ``*httpsecurity.Module``
+``"websocket"``               ``*websocket.Module``
+``"websocket.manager"``       ``*websocket.Manager``
 ============================  ========================
 
 DataProvider
@@ -172,4 +177,7 @@ Module Name                        Default Enabled  Package
 ``data.static``                    yes              ``data/static``
 ``data.file``                      yes              ``data/file``
 ``data.sql``                       **no**           ``data/sql``
+``session``                        **no**           ``session``
+``http-security``                  **no**           ``httpsecurity``
+``websocket``                      **no**           ``websocket``
 =================================  ===============  ==============

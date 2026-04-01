@@ -78,6 +78,16 @@ func (c *Context) SetState(key string, val any) {
 	c.state[key] = val
 }
 
+// StateAll returns a shallow copy of the entire state bag. This is useful
+// for handing off state to a long-lived connection (e.g., WebSocket).
+func (c *Context) StateAll() map[string]any {
+	cp := make(map[string]any, len(c.state))
+	for k, v := range c.state {
+		cp[k] = v
+	}
+	return cp
+}
+
 // Hijack marks the connection as hijacked. Call this before upgrading
 // to a different protocol (e.g., WebSocket). Once hijacked, the adapter
 // skips post-handler hooks and error responses, and middleware should

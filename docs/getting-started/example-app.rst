@@ -45,6 +45,8 @@ URL                                               Format       Description
 ``http://localhost:8080/api/posts/:id``           JSON         Single post (API)
 ``http://localhost:8080/api/posts?pretty=true``   JSON         Pretty-printed
 ``http://localhost:8080/api/health``              JSON         Health check
+``http://localhost:8080/chat``                    HTML         Chat room UI
+``ws://localhost:8080/ws/chat``                   WebSocket    Chat endpoint
 ``http://localhost:8080/css/style.css``           CSS          Static file
 ================================================  ===========  =====================
 
@@ -63,7 +65,8 @@ Project Structure
     ├── templates/
     │   ├── home.html
     │   ├── posts.html
-    │   └── post.html
+    │   ├── post.html
+    │   └── chat.html
     └── public/
         └── css/
             └── style.css

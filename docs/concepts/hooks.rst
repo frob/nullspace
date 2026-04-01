@@ -147,6 +147,18 @@ Hook Point                      When
 ``data.after_write``            After data write
 ==============================  ==========================================
 
+WebSocket Lifecycle
+~~~~~~~~~~~~~~~~~~~
+
+==============================  ==========================================
+Hook Point                      When
+==============================  ==========================================
+``websocket.connected``         Connection established after upgrade
+``websocket.message``           Message received (before handler)
+``websocket.disconnected``      Connection closed
+``websocket.error``             Non-clean close error
+==============================  ==========================================
+
 Custom Hook Points
 ------------------
 

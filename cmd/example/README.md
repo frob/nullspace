@@ -32,6 +32,8 @@ task run
 | `/api/admin/posts` | GET | JSON | Post list (requires Basic Auth) |
 | `/api/forms/contact/submissions` | GET | JSON | Stored form submissions |
 | `/api/health` | GET | JSON | Health check |
+| `/chat` | GET | HTML | Chat room UI |
+| `/ws/chat` | GET | WebSocket | Chat endpoint (upgrade) |
 | `/css/style.css` | GET | CSS | Static file |
 
 ## Project Structure
@@ -44,9 +46,11 @@ cmd/example/
 │   ├── auth/
 │   │   ├── module.go        Basic Auth middleware module
 │   │   └── routes.toml      Auth module's route definitions
-│   └── forms/
-│       ├── module.go        Webform handler module
-│       └── routes.toml      Forms module's route definitions
+│   ├── forms/
+│   │   ├── module.go        Webform handler module
+│   │   └── routes.toml      Forms module's route definitions
+│   └── chat/
+│       └── module.go        WebSocket chat module
 ├── content/
 │   └── posts/
 │       ├── hello-world.md   Sample post (markdown + YAML frontmatter)
@@ -56,7 +60,8 @@ cmd/example/
 │   ├── posts.html           Post list template
 │   ├── post.html            Single post template
 │   ├── form.html            Form rendering template
-│   └── form_success.html    Form submission success template
+│   ├── form_success.html    Form submission success template
+│   └── chat.html            Chat room template (WebSocket client)
 └── public/
     └── css/
         └── style.css        Static stylesheet
@@ -76,9 +81,11 @@ k.Use(response.NewFormat...())  // 4. Format resolvers
 k.Use(static.New())             // 5. Static file fallback
 k.Use(file.New())               // 6. File data (provides content)
 k.Use(routing.New())            // 7. Routing (provides registry, resolves TOML routes)
-k.Use(auth.New())               // 8. Auth (registers middleware + loads routes.toml)
-k.Use(forms.New())              // 9. Forms (registers form routes + loads routes.toml)
-k.Use(&appModule{})             // 10. App (registers custom handlers)
+k.Use(websocket.New())          // 8. WebSocket (registers WS handlers on registry)
+k.Use(auth.New())               // 9. Auth (registers middleware + loads routes.toml)
+k.Use(forms.New())              // 10. Forms (registers form routes + loads routes.toml)
+k.Use(chat.New())               // 11. Chat (registers WS chat handler)
+k.Use(&appModule{})             // 12. App (registers custom handlers)
 ```
 
 ### Declarative Routing
@@ -173,6 +180,17 @@ curl -X POST http://localhost:8080/forms/contact \
 # View submissions
 curl http://localhost:8080/api/forms/contact/submissions?pretty=true
 ```
+
+### Chat Module (`modules/chat/`)
+
+A WebSocket chat room. Shows:
+
+- Registering WebSocket handlers via `wsMod.HandleFunc`
+- Room-based broadcast via the connection manager
+- Passing query parameters into connection state via middleware
+- Using `extra` route metadata for room auto-join
+
+Open two browser tabs to `http://localhost:8080/chat` and send messages between them.
 
 ### File-Based Content
 

@@ -1,7 +1,7 @@
 Example Modules
 ===============
 
-The example application at ``cmd/example/`` includes two custom modules that
+The example application at ``cmd/example/`` includes three custom modules that
 demonstrate how to extend the framework. These are reference implementations
 — study them to understand the patterns, then adapt for your own modules.
 
@@ -468,3 +468,106 @@ Key Patterns
    pipeline, and file module by key. It doesn't import them as hard
    dependencies — if the file module isn't available, forms still work
    (they just don't persist).
+
+Chat Module
+-----------
+
+``cmd/example/modules/chat/``
+
+A real-time chat room built on the WebSocket module that broadcasts messages
+to all connected clients.
+
+What It Demonstrates
+~~~~~~~~~~~~~~~~~~~~
+
+- **WebSocket handler registration** — registers a handler via ``wsMod.HandleFunc``
+- **Room-based broadcast** — uses the connection manager to broadcast to a room
+- **Connection state from middleware** — reads query params into state via named middleware
+- **Route metadata** — uses ``extra`` field for room auto-join
+- **Service locator** — retrieves the websocket module, pipeline, and registry
+
+Configuration
+~~~~~~~~~~~~~
+
+.. code-block:: toml
+
+    [modules]
+    websocket = true
+    chat = true
+
+    [websocket]
+    insecure_skip_verify = true    # development only
+
+    [[routing.routes]]
+    group   = "pages"
+    path    = "/chat"
+    handler = "chat.page"
+
+    [[routing.routes]]
+    path       = "/ws/chat"
+    handler    = "ws.chat"
+    middleware = ["chat.name"]
+    extra      = { ws_rooms = "chat" }
+
+How It Works
+~~~~~~~~~~~~
+
+During ``Init()``, the chat module:
+
+1. Retrieves the websocket module via ``kernel.GetResource``
+2. Registers a ``chat.name`` middleware that reads the ``?name=`` query param
+3. Registers a ``ws.chat`` handler that broadcasts JSON messages to the room
+4. Registers a ``chat.page`` handler that renders the HTML template
+
+.. code-block:: go
+
+    func (m *Module) Init(k *kernel.Kernel) error {
+        wsMod, _ := kernel.GetResource[*websocket.Module](k, "websocket")
+        mgr := wsMod.Manager()
+
+        reg, _ := kernel.GetResource[*routing.Registry](k, "routing.registry")
+        reg.Middleware("chat.name", m.nameMiddleware())
+
+        wsMod.HandleFunc("chat", func(conn *websocket.Conn, msg websocket.Message) error {
+            user := "anonymous"
+            if u, ok := conn.State("chat.user"); ok {
+                user = u.(string)
+            }
+            out, _ := json.Marshal(chatMessage{User: user, Text: string(msg.Data)})
+            mgr.BroadcastTo("chat", websocket.TextMessage(string(out)))
+            return nil
+        })
+        return nil
+    }
+
+Message Flow
+~~~~~~~~~~~~
+
+1. Client connects to ``ws://localhost:8080/ws/chat?name=Alice``
+2. ``chat.name`` middleware sets ``ctx.SetState("chat.user", "Alice")``
+3. Upgrade handler copies state into ``Conn``, joins the ``chat`` room
+4. Client sends ``"hello"``
+5. Chat handler wraps it in JSON: ``{"user":"Alice","text":"hello","timestamp":"..."}``
+6. ``mgr.BroadcastTo("chat", ...)`` sends to all connections in the room
+7. Every connected client receives the JSON and renders it
+
+Test by opening two browser tabs to ``http://localhost:8080/chat``.
+
+Key Patterns
+~~~~~~~~~~~~
+
+1. **Middleware for upgrade context** — the ``chat.name`` middleware runs
+   before the WebSocket upgrade. State it sets is automatically carried into
+   the connection via ``ctx.StateAll()``.
+
+2. **Room auto-join via route metadata** — the ``extra = { ws_rooms = "chat" }``
+   TOML field auto-joins connections to the room without code. The websocket
+   module reads this from ``ctx.Route().Meta``.
+
+3. **JSON message envelope** — the handler wraps raw text in a structured
+   JSON object with user, timestamp, and type. The client parses this for
+   rich rendering.
+
+4. **No persistent storage** — the chat module is stateless. Messages exist
+   only in transit. For persistence, hook into ``websocket.message`` and
+   write to the file or SQL module.

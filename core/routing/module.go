@@ -253,6 +253,7 @@ func (m *Module) expandRoute(r Route) []resolvedRoute {
 			Session:       r.Session,
 			Csrf:          r.Csrf,
 			HttpsRedirect: r.HttpsRedirect,
+			Extra:         r.Extra,
 		})
 	}
 	return resolved
@@ -366,6 +367,9 @@ func (m *Module) registerRoute(router *request.Router, r resolvedRoute) error {
 	}
 	if r.HttpsRedirect != "" {
 		opts = append(opts, request.WithMeta("https_redirect", r.HttpsRedirect))
+	}
+	for k, v := range r.Extra {
+		opts = append(opts, request.WithMeta(k, v))
 	}
 
 	// Resolve middleware (warn and skip unknown middleware).

@@ -16,6 +16,8 @@
 //   - http://localhost:8080/api/posts/:id        — Single post (JSON, from collection)
 //   - http://localhost:8080/api/admin/posts      — Protected by Basic Auth
 //   - http://localhost:8080/api/health           — Health check (JSON)
+//   - http://localhost:8080/chat                  — Chat room (HTML + WebSocket)
+//   - http://localhost:8080/ws/chat               — WebSocket endpoint
 //   - http://localhost:8080/blog                 — Redirects to /posts
 //   - http://localhost:8080/css/style.css        — Static file
 package main
@@ -29,6 +31,7 @@ import (
 	"syscall"
 
 	"github.com/frob/nullspace/cmd/example/modules/auth"
+	"github.com/frob/nullspace/cmd/example/modules/chat"
 	"github.com/frob/nullspace/cmd/example/modules/forms"
 	"github.com/frob/nullspace/core/nslog"
 	"github.com/frob/nullspace/core/request"
@@ -37,6 +40,7 @@ import (
 	"github.com/frob/nullspace/kernel"
 	"github.com/frob/nullspace/module/data/file"
 	"github.com/frob/nullspace/module/data/static"
+	"github.com/frob/nullspace/module/websocket"
 )
 
 func main() {
@@ -62,9 +66,13 @@ func main() {
 	// Must be registered BEFORE modules that register handlers on it.
 	k.Use(routing.New())
 
+	// WebSocket support — must be registered before modules that use it.
+	k.Use(websocket.New())
+
 	// Example modules — register their own handlers and middleware.
 	k.Use(auth.New())
 	k.Use(forms.New())
+	k.Use(chat.New())
 
 	// Application module — registers custom handlers on the routing registry.
 	k.Use(&appModule{})

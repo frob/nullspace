@@ -78,6 +78,11 @@ type Route struct {
 	// Set to "true" to redirect HTTP requests to HTTPS.
 	// Requires the http-security module to be enabled.
 	HttpsRedirect string `json:"https_redirect" toml:"https_redirect"`
+
+	// Extra holds arbitrary key-value metadata that modules can read
+	// via route.Meta. Use this for module-specific route directives
+	// (e.g., ws_rooms, custom flags) without modifying core structs.
+	Extra map[string]string `json:"extra" toml:"extra"`
 }
 
 // Collection defines auto-generated CRUD routes for a data collection.
@@ -123,4 +128,5 @@ type resolvedRoute struct {
 	Session       string
 	Csrf          string
 	HttpsRedirect string
+	Extra         map[string]string
 }
