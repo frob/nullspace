@@ -7,7 +7,7 @@ If you're looking for the convention-based binary that serves projects from a di
 ## Run
 
 ```bash
-cd cmd/example
+cd cmd/examples/kitchen-sink
 go run .
 ```
 
@@ -39,7 +39,7 @@ task run
 ## Project Structure
 
 ```
-cmd/example/
+cmd/examples/kitchen-sink/
 ├── main.go                  Application entry point — module wiring
 ├── nullspace.toml           Project config + project-level routes
 ├── modules/

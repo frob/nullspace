@@ -32,7 +32,7 @@ Library-first (`go get`) with CLI scaffolding tool planned as a later layer.
 
 ```
 nullspace/
-├── cmd/example/main.go
+├── cmd/examples/kitchen-sink/main.go
 ├── kernel/
 │   ├── kernel.go
 │   ├── hook.go

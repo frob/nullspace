@@ -23,8 +23,9 @@ type Config struct {
 
 // Module provides SQL database access via database/sql.
 type Module struct {
-	db     *sql.DB
-	kernel *kernel.Kernel
+	db         *sql.DB
+	kernel     *kernel.Kernel
+	migrations *MigrationRegistry
 }
 
 // New creates a new SQL data module.
@@ -59,8 +60,15 @@ func (m *Module) Init(k *kernel.Kernel) error {
 	}
 	m.db = db
 
+	m.migrations = NewMigrationRegistry()
+
 	k.Provide("data.sql", m)
 	k.Provide("db", db)
+	k.Provide("data.sql.migrations", m.migrations)
+
+	k.Hook("kernel.after_init", 10, func(ctx context.Context) error {
+		return m.migrations.Run(ctx, m.db)
+	})
 
 	return nil
 }

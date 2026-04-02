@@ -78,7 +78,7 @@ nfpms:
       - archlinux
     bindir: /usr/bin
     contents:
-      - src: cmd/example/nullspace.toml
+      - src: cmd/examples/kitchen-sink/nullspace.toml
         dst: /etc/nullspace/nullspace.toml
         type: config
     rpm:

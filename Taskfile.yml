@@ -5,7 +5,7 @@ vars:
   DOCS_IMAGE: nullspace-docs
   DOCS_DIR: docs
   DOCS_BUILD_DIR: docs/_build/html
-  EXAMPLE_DIR: cmd/example
+  EXAMPLE_DIR: cmd/examples/kitchen-sink
   VERSION:
     sh: git describe --tags --always --dirty 2>/dev/null || echo dev
   BIN_DIR: bin
@@ -133,7 +133,7 @@ tasks:
     desc: Run the application in a container (mount current dir as project)
     deps: [docker:build]
     cmds:
-      - docker run --rm -p 8080:8080 -v {{.ROOT_DIR}}/cmd/example:/app {{.APP_IMAGE}}
+      - docker run --rm -p 8080:8080 -v {{.ROOT_DIR}}/cmd/examples/kitchen-sink:/app {{.APP_IMAGE}}
 
   docker:test:
     desc: Run tests in a container

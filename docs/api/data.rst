@@ -117,3 +117,41 @@ Creates a new SQL module. Implements ``Module``, ``Configurable``, and
 
 - ``"data.sql"`` -- ``*sql.Module``
 - ``"db"`` -- ``*sql.DB``
+- ``"data.sql.migrations"`` -- ``*sql.MigrationRegistry``
+
+Migrations
+~~~~~~~~~~
+
+.. code-block:: go
+
+    type Migration struct {
+        Version     int
+        Description string
+        Up          func(ctx context.Context, tx *sql.Tx) error
+    }
+
+A single, versioned schema change. ``Up`` runs inside a transaction — return
+an error to roll back.
+
+.. code-block:: go
+
+    func NewMigrationRegistry() *MigrationRegistry
+
+Creates an empty migration registry. The SQL module creates one during
+``Init`` and provides it as ``"data.sql.migrations"``.
+
+.. code-block:: go
+
+    func (r *MigrationRegistry) Register(module string, migrations ...Migration)
+
+Registers migrations for the named module. Call this during ``Init`` from any
+module that needs database tables. Modules are processed in registration order;
+within a module, migrations run in ascending version order.
+
+.. code-block:: go
+
+    func (r *MigrationRegistry) Run(ctx context.Context, db *sql.DB) error
+
+Creates the ``_migrations`` tracking table if needed, then applies all pending
+migrations. Each migration runs in its own transaction. Called automatically by
+the SQL module at ``kernel.after_init`` — you do not need to call this directly.

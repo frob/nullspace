@@ -58,10 +58,13 @@ SQLStore
 
 .. code-block:: go
 
-    func NewSQLStore(db *sql.DB, ttl time.Duration) (*SQLStore, error)
+    func NewSQLStore(db *sql.DB, ttl time.Duration) *SQLStore
 
-SQL-backed store. Creates the ``sessions`` table if it does not exist.
-Requires the ``data.sql`` module. Use for production.
+SQL-backed store. Requires the ``data.sql`` module. Use for production.
+
+The ``sessions`` table is created via the migration registry during
+``kernel.after_init`` — the session module registers a version 1 migration
+automatically when the SQL store is selected.
 
 Module
 ------

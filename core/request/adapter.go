@@ -45,6 +45,12 @@ func NewAdapter() *Adapter {
 
 func (a *Adapter) Name() string { return "request" }
 
+// Protocol implements transport.Listener.
+func (a *Adapter) Protocol() string { return "http" }
+
+// Addr implements transport.Listener.
+func (a *Adapter) Addr() string { return a.addr }
+
 func (a *Adapter) Config() kernel.ModuleConfig {
 	return kernel.ModuleConfig{
 		Key: "request",
@@ -66,6 +72,7 @@ func (a *Adapter) Init(k *kernel.Kernel) error {
 
 	k.Provide("router", a.router)
 	k.Provide("request.adapter", a)
+	k.Provide("transport.http", a)
 
 	return nil
 }

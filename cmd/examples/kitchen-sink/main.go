@@ -1,6 +1,6 @@
 // Example application demonstrating the Nullspace framework.
 //
-// Run from the cmd/example directory:
+// Run from the cmd/examples/kitchen-sink directory:
 //
 //	go run .
 //
@@ -30,9 +30,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/frob/nullspace/cmd/example/modules/auth"
-	"github.com/frob/nullspace/cmd/example/modules/chat"
-	"github.com/frob/nullspace/cmd/example/modules/forms"
+	"github.com/frob/nullspace/cmd/examples/kitchen-sink/modules/auth"
+	"github.com/frob/nullspace/cmd/examples/kitchen-sink/modules/chat"
+	"github.com/frob/nullspace/cmd/examples/kitchen-sink/modules/forms"
 	"github.com/frob/nullspace/core/nslog"
 	"github.com/frob/nullspace/core/request"
 	"github.com/frob/nullspace/core/response"

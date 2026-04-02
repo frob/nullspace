@@ -20,7 +20,7 @@ Hexagonal. Kernel at center, everything else is a module.
 - **Routing** (`core/routing/`) — TOML route config, handler registry, built-in handlers
 - **Request** (`core/request/`) — HTTP adapter, router, middleware, context
 - **Response** (`core/response/`) — format resolution, formatters, pipeline
-- **Data** (`module/data/`) — static files, file entities, SQL
+- **Data** (`module/data/`) — static files, file entities, SQL, migrations
 - **Logging** (`core/nslog/`) — slog adapter, per-request loggers
 - **Session** (`module/session/`) — session management, memory and SQL stores
 - **HTTP Security** (`module/httpsecurity/`) — security headers, CSRF, HTTPS redirect
@@ -35,6 +35,7 @@ Hexagonal. Kernel at center, everything else is a module.
 - Routes: TOML in `nullspace.toml` or per-module `routes.toml` (embedded via `go:embed`)
 - Handlers registered by name: `reg.HandleFunc("name", handler)`
 - Service locator: `k.Provide("key", value)` / `kernel.GetResource[T](k, "key")`
+- Migrations: modules register via `MigrationRegistry` (`"data.sql.migrations"`), run at `kernel.after_init`
 
 ## Module registration order matters
 

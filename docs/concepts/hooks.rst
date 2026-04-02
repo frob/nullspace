@@ -147,6 +147,13 @@ Hook Point                      When
 ``data.after_write``            After data write
 ==============================  ==========================================
 
+.. note::
+
+   The SQL module registers a ``kernel.after_init`` hook (priority 10) that
+   runs all pending database migrations. Modules register their migrations
+   during ``Init`` via the ``"data.sql.migrations"`` service locator key.
+   See :doc:`/guides/data` for details.
+
 WebSocket Lifecycle
 ~~~~~~~~~~~~~~~~~~~
 

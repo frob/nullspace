@@ -15,19 +15,11 @@ type SQLStore struct {
 	ttl time.Duration
 }
 
-// NewSQLStore creates a SQL-backed store and ensures the sessions table exists.
-func NewSQLStore(db *sql.DB, ttl time.Duration) (*SQLStore, error) {
-	_, err := db.Exec(`
-		CREATE TABLE IF NOT EXISTS sessions (
-			id         TEXT PRIMARY KEY,
-			data       TEXT NOT NULL DEFAULT '{}',
-			expires_at INTEGER NOT NULL
-		)
-	`)
-	if err != nil {
-		return nil, fmt.Errorf("create sessions table: %w", err)
-	}
-	return &SQLStore{db: db, ttl: ttl}, nil
+// NewSQLStore creates a SQL-backed store. The sessions table is created by
+// the migration registry during kernel.after_init — do not call this before
+// migrations have run.
+func NewSQLStore(db *sql.DB, ttl time.Duration) *SQLStore {
+	return &SQLStore{db: db, ttl: ttl}
 }
 
 func (s *SQLStore) Create(ctx context.Context) (*Session, error) {

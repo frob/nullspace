@@ -59,6 +59,12 @@ To use the SQL store:
     driver = "sqlite"
     dsn    = "./app.db"
 
+The ``sessions`` table is created automatically via the SQL module's migration
+system — you do not need to create it manually. The session module registers
+its schema as a version 1 migration during ``Init``, and it runs at
+``kernel.after_init`` before any module's ``Start`` method is called. See
+:doc:`/guides/data` for details on the migration system.
+
 Middleware
 ----------
 

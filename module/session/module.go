@@ -10,6 +10,7 @@ import (
 	"github.com/frob/nullspace/core/request"
 	"github.com/frob/nullspace/core/routing"
 	"github.com/frob/nullspace/kernel"
+	datasql "github.com/frob/nullspace/module/data/sql"
 )
 
 // Config holds the session module's configuration.
@@ -80,11 +81,27 @@ func (m *Module) Init(k *kernel.Kernel) error {
 		if err != nil {
 			return fmt.Errorf("session: sql store requires data.sql module: %w", err)
 		}
-		sqlStore, err := NewSQLStore(db, ttl)
+
+		reg, err := kernel.GetResource[*datasql.MigrationRegistry](k, "data.sql.migrations")
 		if err != nil {
-			return fmt.Errorf("session: init sql store: %w", err)
+			return fmt.Errorf("session: migration registry not found: %w", err)
 		}
-		m.store = sqlStore
+		reg.Register("session", datasql.Migration{
+			Version:     1,
+			Description: "create sessions table",
+			Up: func(ctx context.Context, tx *sql.Tx) error {
+				_, err := tx.ExecContext(ctx, `
+					CREATE TABLE IF NOT EXISTS sessions (
+						id         TEXT PRIMARY KEY,
+						data       TEXT NOT NULL DEFAULT '{}',
+						expires_at INTEGER NOT NULL
+					)
+				`)
+				return err
+			},
+		})
+
+		m.store = NewSQLStore(db, ttl)
 	default:
 		m.store = NewMemoryStore(ttl)
 	}

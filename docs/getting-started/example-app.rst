@@ -4,14 +4,14 @@ Example Application
 The repository includes two entry points that demonstrate the framework:
 
 - ``cmd/nullspace/`` -- The installable binary with convention-based routing
-- ``cmd/example/`` -- A library-usage example with explicit route wiring
+- ``cmd/examples/kitchen-sink/`` -- A library-usage example with explicit route wiring
 
 Using the Nullspace Binary
 --------------------------
 
 The fastest way to see the framework in action::
 
-    cd cmd/example
+    cd cmd/examples/kitchen-sink
     nullspace
 
 Or scaffold a fresh project anywhere::
@@ -26,10 +26,10 @@ and registers HTML + JSON routes for each.
 Using the Library Example
 --------------------------
 
-The ``cmd/example/`` directory shows how to use Nullspace as a Go library
+The ``cmd/examples/kitchen-sink/`` directory shows how to use Nullspace as a Go library
 with full control over module wiring and route definitions::
 
-    cd cmd/example
+    cd cmd/examples/kitchen-sink
     go run .
 
 Endpoints
@@ -55,7 +55,7 @@ Project Structure
 
 ::
 
-    cmd/example/
+    cmd/examples/kitchen-sink/
     ├── main.go              Application entry point (library usage)
     ├── nullspace.toml       Configuration
     ├── content/

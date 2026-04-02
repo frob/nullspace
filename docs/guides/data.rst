@@ -275,3 +275,98 @@ databases, import the driver and set the config:
 .. code-block:: go
 
     err := sqlMod.Healthy(ctx)  // calls db.PingContext()
+
+Migrations
+----------
+
+The SQL module includes a built-in migration system for managing schema changes.
+Migrations are Go functions that run inside transactions — if one fails, its
+transaction is rolled back and the error is reported.
+
+How It Works
+~~~~~~~~~~~~
+
+1. The SQL module creates a ``MigrationRegistry`` during ``Init`` and provides
+   it via the service locator as ``"data.sql.migrations"``.
+2. Other modules register their migrations during their own ``Init``.
+3. At ``kernel.after_init``, the SQL module runs all pending migrations
+   automatically — before any module's ``Start`` method is called.
+
+Each migration is scoped to a module name and version number. The tracking table
+``_migrations`` records which migrations have been applied, so they run exactly
+once.
+
+Defining Migrations
+~~~~~~~~~~~~~~~~~~~
+
+Migrations are registered from a module's ``Init`` method:
+
+.. code-block:: go
+
+    import (
+        datasql "github.com/frob/nullspace/module/data/sql"
+        "github.com/frob/nullspace/kernel"
+    )
+
+    func (m *MyModule) Init(k *kernel.Kernel) error {
+        reg, err := kernel.GetResource[*datasql.MigrationRegistry](k, "data.sql.migrations")
+        if err != nil {
+            return err
+        }
+
+        reg.Register("mymodule",
+            datasql.Migration{
+                Version:     1,
+                Description: "create widgets table",
+                Up: func(ctx context.Context, tx *sql.Tx) error {
+                    _, err := tx.ExecContext(ctx, `
+                        CREATE TABLE widgets (
+                            id   INTEGER PRIMARY KEY AUTOINCREMENT,
+                            name TEXT NOT NULL
+                        )
+                    `)
+                    return err
+                },
+            },
+            datasql.Migration{
+                Version:     2,
+                Description: "add created_at to widgets",
+                Up: func(ctx context.Context, tx *sql.Tx) error {
+                    _, err := tx.ExecContext(ctx, `
+                        ALTER TABLE widgets ADD COLUMN created_at TEXT NOT NULL DEFAULT ''
+                    `)
+                    return err
+                },
+            },
+        )
+
+        return nil
+    }
+
+Key points:
+
+- **Versions are sequential integers, scoped per module.** The session module
+  has its own version 1, your app has its own version 1 — they do not collide.
+- **Each migration runs in a transaction.** If ``Up`` returns an error, the
+  transaction is rolled back and subsequent migrations do not run.
+- **Migrations are forward-only.** There is no rollback support. To fix a bad
+  migration, write a new one.
+- **Registration order determines module execution order.** Modules registered
+  earlier with ``k.Use()`` have their migrations run first. Within a module,
+  migrations run in ascending version order.
+
+The ``_migrations`` tracking table is created automatically:
+
+.. code-block:: sql
+
+    CREATE TABLE IF NOT EXISTS _migrations (
+        module      TEXT    NOT NULL,
+        version     INTEGER NOT NULL,
+        description TEXT    NOT NULL DEFAULT '',
+        applied_at  TEXT    NOT NULL,
+        PRIMARY KEY (module, version)
+    );
+
+Framework modules like ``session`` register their own migrations automatically
+when using the SQL store — you do not need to create the ``sessions`` table
+yourself.

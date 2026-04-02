@@ -246,7 +246,7 @@ endpoint for authentication.
 Example: Chat Room
 ------------------
 
-The example application at ``cmd/example/`` includes a chat module that
+The example application at ``cmd/examples/kitchen-sink/`` includes a chat module that
 demonstrates a complete WebSocket integration:
 
 .. code-block:: toml
@@ -266,5 +266,5 @@ demonstrates a complete WebSocket integration:
 
 The chat module registers a handler that broadcasts JSON messages to all
 connections in the ``chat`` room, and a middleware that reads the ``?name=``
-query parameter into the connection state. See ``cmd/example/modules/chat/``
+query parameter into the connection state. See ``cmd/examples/kitchen-sink/modules/chat/``
 for the full implementation.

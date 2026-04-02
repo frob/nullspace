@@ -1,14 +1,14 @@
 Example Modules
 ===============
 
-The example application at ``cmd/example/`` includes three custom modules that
+The example application at ``cmd/examples/kitchen-sink/`` includes three custom modules that
 demonstrate how to extend the framework. These are reference implementations
 — study them to understand the patterns, then adapt for your own modules.
 
 Auth Module
 -----------
 
-``cmd/example/modules/auth/``
+``cmd/examples/kitchen-sink/modules/auth/``
 
 A Basic Auth middleware module that protects routes under a configurable path
 prefix.
@@ -189,7 +189,7 @@ Key Patterns
 Forms Module
 ------------
 
-``cmd/example/modules/forms/``
+``cmd/examples/kitchen-sink/modules/forms/``
 
 A configurable webform handler that defines forms declaratively in TOML,
 renders them as HTML, validates submissions, stores them via the file data
@@ -472,7 +472,7 @@ Key Patterns
 Chat Module
 -----------
 
-``cmd/example/modules/chat/``
+``cmd/examples/kitchen-sink/modules/chat/``
 
 A real-time chat room built on the WebSocket module that broadcasts messages
 to all connected clients.

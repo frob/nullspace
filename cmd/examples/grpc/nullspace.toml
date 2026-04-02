@@ -1,0 +1,44 @@
+# gRPC example: HTTP + TCP + gRPC in one kernel.
+
+[request]
+addr = ":8080"
+
+[log]
+level = "debug"
+format = "text"
+
+[response]
+default_format = "json"
+
+# Enable additional transports.
+[modules]
+tcp = true
+grpc = true
+
+[tcp]
+addr = ":9090"
+codec = "json-lines"
+
+[grpc]
+addr = ":50051"
+
+# --- HTTP Routes ---
+
+[routing.groups.api]
+prefix = "/api"
+format = "json"
+
+[[routing.routes]]
+group = "api"
+path = "/time"
+handler = "time"
+
+[[routing.routes]]
+group = "api"
+path = "/echo"
+handler = "echo"
+
+[[routing.routes]]
+group = "api"
+path = "/health"
+handler = "health.check"
