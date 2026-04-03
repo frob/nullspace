@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - File Listing</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <h1>Admin - File Listing</h1>
+        {{if .User}}
+        <p>Logged in as <strong>{{.User.Name}}</strong> ({{.User.Email}})</p>
+        {{end}}
+        <nav>
+            <a href="/">Home</a>
+            <a href="/oidc/logout">Logout</a>
+        </nav>
+    </header>
+    <main>
+        <table>
+            <thead>
+                <tr>
+                    <th>File</th>
+                    <th>Size (bytes)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{range .Files}}
+                <tr>
+                    <td>{{.Name}}</td>
+                    <td>{{.Size}}</td>
+                </tr>
+                {{else}}
+                <tr>
+                    <td colspan="2">No files found.</td>
+                </tr>
+                {{end}}
+            </tbody>
+        </table>
+    </main>
+</body>
+</html>

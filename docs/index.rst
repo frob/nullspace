@@ -36,6 +36,7 @@ middleware.
    guides/session
    guides/httpsecurity
    guides/websocket
+   guides/oidc
    guides/example-modules
    guides/deployment
 
@@ -51,4 +52,5 @@ middleware.
    api/session
    api/httpsecurity
    api/websocket
+   api/oidc
    api/data

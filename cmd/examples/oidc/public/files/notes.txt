@@ -1,0 +1,2 @@
+These are sample notes for the OIDC example project.
+The admin interface shows a listing of all files in this directory.

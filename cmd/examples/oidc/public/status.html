@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Status - Nullspace Platform</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <h1>System Status</h1>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/about.html">About</a>
+            <a href="/status.html">Status</a>
+            <a href="/admin">Admin</a>
+        </nav>
+    </header>
+    <main>
+        <h2>Service Health</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Service</th>
+                    <th>Status</th>
+                    <th>Latency (p99)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>HTTP Adapter</td>
+                    <td>Operational</td>
+                    <td>1.2ms</td>
+                </tr>
+                <tr>
+                    <td>OIDC Provider (Keycloak)</td>
+                    <td>Operational</td>
+                    <td>18.4ms</td>
+                </tr>
+                <tr>
+                    <td>Token Encryption (AES-GCM)</td>
+                    <td>Operational</td>
+                    <td>0.03ms</td>
+                </tr>
+                <tr>
+                    <td>Static File Server</td>
+                    <td>Operational</td>
+                    <td>0.8ms</td>
+                </tr>
+                <tr>
+                    <td>JWKS Key Cache</td>
+                    <td>Operational</td>
+                    <td>0.01ms</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>Recent Events</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Event</th>
+                    <th>Duration</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>2026-03-31</td>
+                    <td>Scheduled OIDC signing key rotation</td>
+                    <td>0m (no downtime)</td>
+                </tr>
+                <tr>
+                    <td>2026-03-18</td>
+                    <td>Cascading circuit breaker failure (SEV-2)</td>
+                    <td>47m</td>
+                </tr>
+                <tr>
+                    <td>2026-03-05</td>
+                    <td>HPA autoscaler tuning deployment</td>
+                    <td>0m (no downtime)</td>
+                </tr>
+            </tbody>
+        </table>
+    </main>
+</body>
+</html>

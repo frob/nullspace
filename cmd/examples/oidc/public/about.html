@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - Nullspace Platform</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <h1>About the Platform</h1>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/about.html">About</a>
+            <a href="/status.html">Status</a>
+            <a href="/admin">Admin</a>
+        </nav>
+    </header>
+    <main>
+        <h2>Architecture Overview</h2>
+        <p>
+            The platform is built on a hexagonal kernel with a hook-driven
+            aspect-oriented middleware pipeline. Inbound requests traverse a
+            configurable chain of transport adapters, format resolvers, and
+            route-level middleware before reaching the application handler.
+        </p>
+        <p>
+            Authentication is delegated to an external OpenID Connect provider
+            via the Authorization Code + PKCE flow. Token introspection is
+            performed at the edge using encrypted session cookies with AES-GCM,
+            eliminating the need for a centralized session store and reducing
+            per-request latency to sub-millisecond overhead.
+        </p>
+
+        <h2>Module System</h2>
+        <p>
+            Every component — from logging to CSRF protection to WebSocket
+            broadcast — is a discrete module that implements a four-phase
+            lifecycle: <code>Init</code>, <code>Start</code>,
+            <code>Stop</code>, and declarative configuration via TOML. Modules
+            communicate through a service locator and an asynchronous hook bus,
+            enabling loose coupling without sacrificing observability.
+        </p>
+
+        <h2>Contributed Modules</h2>
+        <p>
+            Optional capabilities like gRPC transport and OIDC authentication
+            are published as separate Go modules. This keeps heavy dependencies
+            (protobuf, OAuth2 libraries) out of the core framework while
+            allowing applications to compose exactly the feature set they need.
+        </p>
+    </main>
+</body>
+</html>

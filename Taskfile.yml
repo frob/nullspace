@@ -95,10 +95,51 @@ tasks:
       - GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-s -w -X main.version={{.VERSION}}" -o {{.BIN_DIR}}/nullspace-windows-amd64.exe ./cmd/nullspace
 
   run:
-    desc: Run the example application
+    desc: "Run an example (default: kitchen-sink)"
     dir: "{{.EXAMPLE_DIR}}"
     cmds:
       - go run .
+
+  run:kitchen-sink:
+    desc: Run the kitchen-sink example
+    dir: cmd/examples/kitchen-sink
+    cmds:
+      - go run .
+
+  run:grpc:
+    desc: Run the gRPC example (HTTP + TCP + gRPC)
+    dir: cmd/examples/grpc
+    cmds:
+      - go run .
+
+  run:oidc:
+    desc: Run the OIDC example (starts Keycloak automatically)
+    dir: cmd/examples/oidc
+    deps: [oidc:up]
+    cmds:
+      - go run .
+
+  oidc:up:
+    desc: Start Keycloak for the OIDC example
+    dir: cmd/examples/oidc
+    cmds:
+      - docker compose up -d
+      - echo "Waiting for Keycloak to be ready..."
+      - until curl -sf http://localhost:8180/realms/nullspace/.well-known/openid-configuration > /dev/null 2>&1; do sleep 2; done
+      - echo "Keycloak ready."
+
+  oidc:down:
+    desc: Stop Keycloak for the OIDC example
+    dir: cmd/examples/oidc
+    cmds:
+      - docker compose down
+
+  oidc:reset:
+    desc: Destroy and recreate Keycloak (reimports realm config)
+    dir: cmd/examples/oidc
+    cmds:
+      - docker compose down -v
+      - task: oidc:up
 
   run:nullspace:
     desc: Run the nullspace binary from source
@@ -106,7 +147,7 @@ tasks:
       - go run ./cmd/nullspace {{.CLI_ARGS}}
 
   run:watch:
-    desc: Run the example with file watching (requires entr)
+    desc: "Run an example with file watching (default: kitchen-sink, requires entr)"
     dir: "{{.EXAMPLE_DIR}}"
     cmds:
       - find ../.. -name '*.go' | entr -r go run .

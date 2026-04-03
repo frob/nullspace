@@ -1,0 +1,42 @@
+[request]
+addr = ":8888"
+
+[log]
+level = "debug"
+format = "text"
+
+[response]
+default_format = "html"
+template_dir = "./templates"
+
+[data.static]
+dir = "./public"
+
+[modules]
+oidc = true
+
+[oidc]
+issuer          = "http://localhost:8180/realms/nullspace"
+client_id       = "nullspace-app"
+# redirect_uri is auto-derived from [request] addr when omitted
+scopes          = ["openid", "profile", "email"]
+cookie_secret   = "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6"
+post_login_url  = "/admin"
+post_logout_url = "/"
+
+# --- Routes ---
+
+[routing.groups.admin]
+prefix = "/admin"
+format = "html"
+middleware = ["oidc"]
+
+[[routing.routes]]
+path = "/"
+handler = "home.page"
+format = "html"
+
+[[routing.routes]]
+group = "admin"
+path = ""
+handler = "admin.files"
