@@ -191,6 +191,11 @@ func (a *Adapter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		ctx = response.WithRouteFormat(ctx, fmt)
 	}
 
+	// Check for streaming mode via query param or route config.
+	if r.URL.Query().Get("stream") == "true" || match.Meta["stream"] == "true" {
+		ctx = response.WithStream(ctx, true)
+	}
+
 	// 5. Fire request.routed.
 	_ = a.kernel.Fire("request.routed", ctx)
 
@@ -283,6 +288,14 @@ func (w *responseCapture) Write(b []byte) (int, error) {
 		w.written = true
 	}
 	return w.ResponseWriter.Write(b)
+}
+
+// Flush implements http.Flusher by delegating to the underlying writer.
+// This enables chunked streaming responses.
+func (w *responseCapture) Flush() {
+	if f, ok := w.ResponseWriter.(http.Flusher); ok {
+		f.Flush()
+	}
 }
 
 // Hijack implements http.Hijacker by delegating to the underlying writer.

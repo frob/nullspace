@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"path/filepath"
 	"strings"
 
 	"github.com/frob/nullspace/core/nslog"
@@ -52,21 +51,10 @@ func resolveID(d *deps, ctx *request.Context, paramName string) (string, error) 
 	if id == "" {
 		return "", writeErr(d, ctx, http.StatusBadRequest, fmt.Errorf("missing parameter: %s", paramName))
 	}
-	if err := validateSegment(id); err != nil {
+	if err := file.ValidateSegment(id); err != nil {
 		return "", writeErr(d, ctx, http.StatusBadRequest, err)
 	}
 	return id, nil
-}
-
-// validateSegment rejects values that could cause path traversal or other injection.
-func validateSegment(s string) error {
-	if strings.ContainsAny(s, "/\\") {
-		return fmt.Errorf("invalid parameter: must not contain path separators")
-	}
-	if filepath.Clean(s) != s || strings.Contains(s, "..") {
-		return fmt.Errorf("invalid parameter: must not contain path traversal sequences")
-	}
-	return nil
 }
 
 // writeErr writes an error response and returns a sentinel so callers can do `return writeErr(...)`.
@@ -82,6 +70,11 @@ func makeDataList(d *deps) request.HandlerFunc {
 		collection := route.Meta["_collection"]
 		if collection == "" {
 			return writeErr(d, ctx, http.StatusInternalServerError, fmt.Errorf("route misconfigured: missing collection"))
+		}
+
+		// Streaming mode: deliver entities incrementally.
+		if response.StreamFromContext(ctx.Context()) {
+			return streamList(d, ctx, collection)
 		}
 
 		entities, err := d.fileMod.List(ctx.Context(), collection)
@@ -105,6 +98,60 @@ func makeDataList(d *deps) request.HandlerFunc {
 		return d.pipeline.Write(ctx.Context(), ctx.Writer, resp)
 	}
 }
+
+func streamList(d *deps, ctx *request.Context, collection string) error {
+	iter, err := d.fileMod.ListIter(ctx.Context(), collection)
+	if err != nil {
+		nslog.FromContext(ctx.Context()).Error("list iter failed", "collection", collection, "err", err)
+		return writeErr(d, ctx, http.StatusInternalServerError, fmt.Errorf("internal error"))
+	}
+
+	var streamIter response.StreamIter
+	if iter == nil {
+		streamIter = &emptyIter{}
+	} else {
+		streamIter = &entityIterAdapter{iter: iter}
+	}
+
+	sr := &response.StreamResponse{
+		Status: http.StatusOK,
+		Meta: map[string]any{
+			"Collection": collection,
+		},
+		Iter: streamIter,
+	}
+	if iter != nil {
+		sr.Meta["Total"] = iter.Total()
+	}
+
+	return d.pipeline.WriteStream(ctx.Context(), ctx.Writer, sr)
+}
+
+// entityIterAdapter adapts file.ListIter to response.StreamIter.
+type entityIterAdapter struct {
+	iter *file.ListIter
+}
+
+func (a *entityIterAdapter) Next() (any, error) {
+	e, err := a.iter.Next()
+	if err != nil {
+		return nil, err
+	}
+	if e == nil {
+		return nil, nil
+	}
+	return file.EntityToMap(e), nil
+}
+
+func (a *entityIterAdapter) Close() error {
+	return a.iter.Close()
+}
+
+// emptyIter is a StreamIter that yields no items.
+type emptyIter struct{}
+
+func (e *emptyIter) Next() (any, error) { return nil, nil }
+func (e *emptyIter) Close() error       { return nil }
 
 // makeDataGet returns a handler that fetches a single entity by ID.
 func makeDataGet(d *deps) request.HandlerFunc {
@@ -156,7 +203,7 @@ func makeDataCreate(d *deps) request.HandlerFunc {
 		if entity.ID == "" {
 			return writeErr(d, ctx, http.StatusBadRequest, fmt.Errorf("missing 'id' field"))
 		}
-		if err := validateSegment(entity.ID); err != nil {
+		if err := file.ValidateSegment(entity.ID); err != nil {
 			return writeErr(d, ctx, http.StatusBadRequest, err)
 		}
 
@@ -301,25 +348,11 @@ func dataInjectionMiddleware(d *deps, collection, paramName string) request.Midd
 // Helper functions.
 
 func entityToMap(e *file.Entity) map[string]any {
-	m := map[string]any{
-		"ID":   e.ID,
-		"Body": e.Body,
-	}
-	// Flatten meta into the top level for template convenience.
-	for k, v := range e.Meta {
-		m[k] = v
-	}
-	// Also keep meta as a nested map for JSON.
-	m["Meta"] = e.Meta
-	return m
+	return file.EntityToMap(e)
 }
 
 func entitiesToMaps(entities []*file.Entity) []map[string]any {
-	items := make([]map[string]any, 0, len(entities))
-	for _, e := range entities {
-		items = append(items, entityToMap(e))
-	}
-	return items
+	return file.EntitiesToMaps(entities)
 }
 
 func entityFromBody(ctx *request.Context) (*file.Entity, error) {
@@ -349,26 +382,5 @@ func entityFromBody(ctx *request.Context) (*file.Entity, error) {
 }
 
 func bodyToEntity(body map[string]any) (*file.Entity, error) {
-	e := &file.Entity{
-		Meta:   make(map[string]any),
-		Format: "json",
-	}
-
-	if id, ok := body["id"].(string); ok {
-		e.ID = id
-		delete(body, "id")
-	}
-	if b, ok := body["body"].(string); ok {
-		e.Body = b
-		delete(body, "body")
-	}
-	if f, ok := body["format"].(string); ok {
-		e.Format = f
-		delete(body, "format")
-	}
-
-	for k, v := range body {
-		e.Meta[k] = v
-	}
-	return e, nil
+	return file.BodyToEntity(body)
 }

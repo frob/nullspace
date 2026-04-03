@@ -8,6 +8,7 @@ var (
 	routeFormatKey  = contextKey{"response.route_format"}
 	queryFormatKey  = contextKey{"response.query_format"}
 	acceptHeaderKey = contextKey{"response.accept_header"}
+	streamKey       = contextKey{"response.stream"}
 )
 
 // WithRouteFormat attaches the route's format metadata to a context.
@@ -39,4 +40,15 @@ func queryFormatFromContext(ctx context.Context) string {
 func acceptHeaderFromContext(ctx context.Context) string {
 	s, _ := ctx.Value(acceptHeaderKey).(string)
 	return s
+}
+
+// WithStream marks a context as requesting streaming responses.
+func WithStream(ctx context.Context, stream bool) context.Context {
+	return context.WithValue(ctx, streamKey, stream)
+}
+
+// StreamFromContext returns whether streaming was requested.
+func StreamFromContext(ctx context.Context) bool {
+	b, _ := ctx.Value(streamKey).(bool)
+	return b
 }

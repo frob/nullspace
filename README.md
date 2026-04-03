@@ -1,6 +1,6 @@
 # Nullspace
 
-An HTTP application framework in Go for serving APIs, HTML, WebSockets, and more. Built on hexagonal architecture with aspect-oriented programming via a hook bus and functional middleware.
+A multi-transport application framework in Go for serving APIs, HTML, WebSockets, and more over HTTP, TCP, and Unix sockets. Built on hexagonal architecture with aspect-oriented programming via a hook bus and functional middleware.
 
 ## Install
 
@@ -234,8 +234,18 @@ format = "markdown"
 driver = "sqlite"
 dsn = "./data.db"
 
+[tcp]
+addr = ":9090"
+codec = "json-lines"      # or "length-prefix"
+
+[ipc]
+path = "/tmp/myapp.sock"
+
 [modules]
-"data.sql" = false   # disabled by default, opt in here
+"data.sql" = false        # disabled by default, opt in here
+tcp = false               # TCP transport
+ipc = false               # Unix socket transport
+"data.bridge" = false     # TCP/IPC data commands
 ```
 
 Environment variables override TOML values. The convention is `NULLSPACE_SECTION_KEY`:
@@ -249,17 +259,19 @@ NULLSPACE_DATA_SQL_DSN=postgres://localhost/mydb
 ## Architecture
 
 ```
-               +---------------------+
-               |       Kernel        |
-               | (registry, hooks,   |
-               |  config, lifecycle) |
-               +---------------------+
-              /     |      |       \
-         Request  Response  Data   Logging
-         (HTTP    (format   (SQL,  (slog
-          adapter, resolve, file,   adapter,
-          router,  JSON,    static) per-request)
-          routing) HTML)
+                  +---------------------+
+                  |       Kernel        |
+                  | (registry, hooks,   |
+                  |  config, lifecycle) |
+                  +---------------------+
+              /      |       |      |       \
+         Request  Response  Data  Transport  Logging
+         (HTTP    (format   (SQL, (TCP, IPC, (slog
+          adapter, resolve, file,  bridge,    adapter,
+          router,  JSON,    static) codec)   per-request)
+          routing) HTML,
+                   text,
+                   ANSI)
 ```
 
 ### Modules
@@ -325,6 +337,96 @@ Response format is resolved through a prioritized module chain:
 | 30 | `format.content_negotiate` | `Accept` header |
 | 40 | `format.default` | Configured default |
 
+Built-in formatters:
+
+| Format | Content-Type | Selection |
+|--------|-------------|-----------|
+| `json` | `application/json` | `Accept: application/json`, `?format=json` |
+| `html` | `text/html` | `Accept: text/html`, `?format=html` |
+| `text` | `text/plain` | `Accept: text/plain`, `?format=text` |
+| `ansi` | `text/plain` | `?format=ansi` (terminal color output) |
+
+The `text` formatter renders structured plain text (key-value headers, blank line, body). The `ansi` formatter adds ANSI escape codes for bold keys, colored status codes, and cyan list indices — useful for TUIs and `curl` debugging.
+
+### TCP and IPC transports
+
+Nullspace supports TCP and Unix socket (IPC) transports alongside HTTP. Both use a command-based router with configurable codecs (JSON-lines or binary length-prefix).
+
+```toml
+[modules]
+tcp = true
+ipc = true
+
+[tcp]
+addr = ":9090"
+codec = "json-lines"
+
+[ipc]
+path = "/tmp/myapp.sock"
+```
+
+Register TCP handlers in your module:
+
+```go
+tcpRouter, _ := kernel.GetResource[*tcp.Router](k, "tcp.router")
+tcpRouter.Handle("ping", func(conn *tcp.Conn, cmd string, payload []byte) error {
+    return conn.Send("pong", nil)
+})
+```
+
+### Data bridge (TCP/IPC)
+
+The `data.bridge` module exposes the same CRUD operations available over HTTP as TCP/IPC commands. Enable it to give non-HTTP clients first-class data access:
+
+```toml
+[modules]
+"data.bridge" = true
+```
+
+Commands use the existing codec framing:
+
+```json
+{"command":"data.list","payload":{"collection":"posts"}}
+{"command":"data.get","payload":{"collection":"posts","id":"hello-world"}}
+{"command":"data.create","payload":{"collection":"posts","body":{"id":"new","title":"Hi"}}}
+{"command":"data.update","payload":{"collection":"posts","id":"hello-world","body":{"title":"Updated"}}}
+{"command":"data.delete","payload":{"collection":"posts","id":"hello-world"}}
+```
+
+All commands reuse the same file module, hooks, and validation as the HTTP handlers.
+
+### Streaming responses
+
+List endpoints support opt-in streaming for large collections. Request streaming with `?stream=true` (HTTP) or `"stream": true` (TCP):
+
+**HTTP** — returns NDJSON (`application/x-ndjson`), one JSON object per line:
+
+```
+GET /api/posts?stream=true
+
+{"ID":"hello","Body":"...","title":"Hello World","Meta":{...}}
+{"ID":"goodbye","Body":"...","title":"Goodbye","Meta":{...}}
+```
+
+**TCP/IPC** — uses envelope messages:
+
+```json
+{"command":"data.list.start","payload":{"collection":"posts","total":2}}
+{"command":"data.list.item","payload":{"ID":"hello",...}}
+{"command":"data.list.item","payload":{"ID":"goodbye",...}}
+{"command":"data.list.end","payload":{"collection":"posts","count":2}}
+```
+
+Streaming can also be enabled per-route in TOML config:
+
+```toml
+[[routing.routes]]
+path = "/api/posts"
+handler = "data.list"
+collection = "posts"
+extra = { stream = "true" }
+```
+
 ### Data modules
 
 **Static files** — serves from a directory as a fallback when no route matches.
@@ -348,13 +450,16 @@ nullspace/
 ├── core/               Required framework modules
 │   ├── nslog/          Logging module (slog adapter, per-request loggers)
 │   ├── request/        HTTP adapter, router, middleware, context
-│   ├── response/       Format resolution, JSON/HTML formatters, pipeline
-│   └── routing/        Declarative TOML routing, handler registry, built-in handlers
+│   ├── response/       Format resolution, formatters (JSON/HTML/text/ANSI), streaming pipeline
+│   ├── routing/        Declarative TOML routing, handler registry, built-in handlers
+│   ├── tcp/            TCP transport adapter, command router, codecs
+│   └── ipc/            Unix socket transport (wraps TCP)
 ├── module/             Optional, pluggable modules
 │   ├── data/
 │   │   ├── static/     Static file serving
-│   │   ├── file/       File-based entity storage
-│   │   └── sql/        SQL with SQLite default
+│   │   ├── file/       File-based entity storage (with lazy iterator)
+│   │   ├── sql/        SQL with SQLite default
+│   │   └── bridge/     TCP/IPC data command bridge
 │   └── session/        Session management (memory and SQL stores)
 ├── docs/               Documentation (Sphinx / Read the Docs)
 └── specs/              Architecture specifications

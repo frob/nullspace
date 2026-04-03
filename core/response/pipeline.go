@@ -55,6 +55,8 @@ func (p *Pipeline) Init(k *kernel.Kernel) error {
 	// Register built-in formatters.
 	p.RegisterFormatter(&JSONFormatter{})
 	p.RegisterFormatter(NewHTMLFormatter(cfg.TemplateDir))
+	p.RegisterFormatter(&TextFormatter{})
+	p.RegisterFormatter(&ANSIFormatter{})
 
 	k.Provide("response.pipeline", p)
 	return nil
@@ -132,6 +134,99 @@ func (p *Pipeline) resolveFormat(ctx context.Context) (string, error) {
 		}
 	}
 	return p.defaultFmt, nil
+}
+
+// WriteStream writes a streaming response. It resolves the format and checks
+// if the formatter implements StreamFormatter. If not, it falls back to
+// draining the iterator and using the normal batch Write path.
+func (p *Pipeline) WriteStream(ctx context.Context, w http.ResponseWriter, sr *StreamResponse) error {
+	_ = p.kernel.Fire("response.before_write", ctx)
+
+	format, err := p.resolveFormat(ctx)
+	if err != nil {
+		return err
+	}
+
+	formatter, ok := p.formatters[format]
+	if !ok {
+		return fmt.Errorf("no formatter for format %q", format)
+	}
+
+	sf, ok := formatter.(StreamFormatter)
+	if !ok {
+		return p.writeStreamAsBatch(ctx, w, sr, formatter)
+	}
+
+	status := sr.Status
+	if status == 0 {
+		status = http.StatusOK
+	}
+
+	for k, v := range sr.Headers {
+		w.Header().Set(k, v)
+	}
+	w.Header().Set("Content-Type", sf.StreamContentType())
+	w.WriteHeader(status)
+
+	if err := sf.WriteStreamHeader(ctx, w, sr.Meta); err != nil {
+		return err
+	}
+	flushWriter(w)
+
+	for {
+		item, err := sr.Iter.Next()
+		if err != nil {
+			return err
+		}
+		if item == nil {
+			break
+		}
+		if err := sf.WriteStreamItem(ctx, w, item); err != nil {
+			return err
+		}
+		flushWriter(w)
+	}
+
+	if err := sf.WriteStreamFooter(ctx, w); err != nil {
+		return err
+	}
+	flushWriter(w)
+
+	_ = p.kernel.Fire("response.after_write", ctx)
+	return nil
+}
+
+// writeStreamAsBatch drains the iterator into a slice and uses the normal
+// batch Write path. Used when the resolved formatter does not implement
+// StreamFormatter.
+func (p *Pipeline) writeStreamAsBatch(ctx context.Context, w http.ResponseWriter, sr *StreamResponse, formatter Formatter) error {
+	defer sr.Iter.Close()
+
+	var items []any
+	for {
+		item, err := sr.Iter.Next()
+		if err != nil {
+			return err
+		}
+		if item == nil {
+			break
+		}
+		items = append(items, item)
+	}
+
+	collection, _ := sr.Meta["Collection"].(string)
+	resp := &Response{
+		Status:  sr.Status,
+		Headers: sr.Headers,
+		Data:    map[string]any{"Items": items, "Collection": collection},
+	}
+	return p.Write(ctx, w, resp)
+}
+
+func flushWriter(w http.ResponseWriter) {
+	if f, ok := w.(http.Flusher); ok {
+		f.Flush()
+	}
 }
 
 func (p *Pipeline) writeError(ctx context.Context, w http.ResponseWriter, resp *Response) error {
