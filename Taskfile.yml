@@ -182,15 +182,26 @@ tasks:
       - docker run --rm -v {{.ROOT_DIR}}:/src -w /src golang:1.25-alpine go test ./... {{.CLI_ARGS}}
 
   # ---------- Documentation ----------
+  #
+  # The docs site uses Hugo (Go-native) with the Hugo Book theme. The API
+  # section is regenerated from the Go source by gomarkdoc on each build.
+  # Both tools are installed in the docs Dockerfile, so neither needs to
+  # be present on the host.
 
   docs:build:
-    desc: Build documentation (HTML) in a container
+    desc: Build documentation HTML into docs/_build/html
     cmds:
-      - docker build -t {{.DOCS_IMAGE}} {{.DOCS_DIR}}
-      - docker run --rm -v {{.ROOT_DIR}}/{{.DOCS_DIR}}:/docs {{.DOCS_IMAGE}}
+      - mkdir -p {{.DOCS_BUILD_DIR}}
+      - docker build -f {{.DOCS_DIR}}/Dockerfile --target builder -o {{.DOCS_BUILD_DIR}} .
     sources:
-      - docs/**/*.rst
-      - docs/conf.py
+      - docs/**/*.md
+      - docs/**/*.yaml
+      - docs/**/*.yml
+      - docs/gen-api.sh
+      - docs/Dockerfile
+      - kernel/**/*.go
+      - core/**/*.go
+      - module/**/*.go
     generates:
       - "{{.DOCS_BUILD_DIR}}/**"
 
@@ -202,10 +213,25 @@ tasks:
       - echo "Serving docs at http://localhost:8000"
       - docker run --rm --name nullspace-docs-server -p 8000:80 -v {{.ROOT_DIR}}/{{.DOCS_BUILD_DIR}}:/usr/share/caddy:ro caddy:2-alpine
 
+  docs:dev:
+    desc: Run `hugo server` locally for live reload (requires hugo installed)
+    dir: "{{.DOCS_DIR}}"
+    cmds:
+      - hugo mod get -u github.com/alex-shpak/hugo-book
+      - bash {{.ROOT_DIR}}/{{.DOCS_DIR}}/gen-api.sh
+      - hugo server --bind 0.0.0.0 --port 1313 --buildDrafts
+
+  docs:api:
+    desc: Regenerate just the API markdown from Go source (requires gomarkdoc)
+    cmds:
+      - bash {{.DOCS_DIR}}/gen-api.sh
+
   docs:clean:
     desc: Remove built documentation
     cmds:
       - rm -rf {{.DOCS_BUILD_DIR}}
+      - rm -rf {{.DOCS_DIR}}/resources
+      - rm -rf {{.DOCS_DIR}}/.hugo_build.lock
 
   # ---------- Release ----------
 
