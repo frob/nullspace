@@ -1,5 +1,26 @@
 # Nullspace Roadmap: CMS + TUI Content Backend
 
+## Shipped
+
+### Background jobs (`module/jobs`)
+
+Memory and SQL-backed job queue with a pluggable handler registry, exponential
+backoff with jitter, per-job leasing, and a configurable worker pool. Supports
+the full lifecycle: `pending → leased → done/failed/cancelled`. Hooks let
+application code observe and override retry behaviour.
+
+- `store = "memory"` — in-process queue, zero dependencies, suitable for dev
+  and stateless deployments.
+- `store = "sql"` — durable queue backed by `data.sql`. Postgres uses
+  `FOR UPDATE SKIP LOCKED` for multi-worker fairness; SQLite serializes via
+  `BEGIN IMMEDIATE`.
+- TCP/IPC bridge: when `data.bridge` and `tcp` are enabled the module
+  registers `jobs.submit`, `jobs.list`, and `jobs.cancel` commands
+  automatically during `kernel.after_init`.
+- CLI subcommand: `nullspace jobs` lists registered handler names.
+
+---
+
 ## Phase 1 — Query Foundations
 
 The data layer returns everything or nothing. Before any frontend (web or terminal) is viable, reads need to be filterable, sortable, and pageable.

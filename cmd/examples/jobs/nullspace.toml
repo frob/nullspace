@@ -1,0 +1,7 @@
+[modules]
+jobs = true
+
+[jobs]
+store = "memory"
+workers = 2
+poll_interval = "50ms"

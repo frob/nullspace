@@ -165,13 +165,22 @@ func (m *Module) Registry() *Registry {
 // resolveRoutes is called via kernel.after_init hook. All modules have
 // registered their handlers by this point.
 func (m *Module) resolveRoutes(ctx context.Context) error {
+	// Expand all routes: merge group settings, expand collections.
+	resolved := m.expandRoutes()
+
+	// If there are no routes to register, skip router lookup entirely.
+	if len(resolved) == 0 {
+		m.kernel.Logger().Info("routes registered from config",
+			"routes", 0,
+			"collections", len(m.config.Collections),
+			"total", 0)
+		return nil
+	}
+
 	router, err := kernel.GetResource[*request.Router](m.kernel, "router")
 	if err != nil {
 		return fmt.Errorf("routing: %w", err)
 	}
-
-	// Expand all routes: merge group settings, expand collections.
-	resolved := m.expandRoutes()
 
 	// Register each route on the router.
 	for _, r := range resolved {

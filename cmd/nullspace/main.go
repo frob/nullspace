@@ -17,11 +17,13 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"os/signal"
 	"strings"
 	"syscall"
+	"text/tabwriter"
 
 	"github.com/frob/nullspace/core/nslog"
 	"github.com/frob/nullspace/core/request"
@@ -30,6 +32,7 @@ import (
 	"github.com/frob/nullspace/kernel"
 	"github.com/frob/nullspace/module/data/file"
 	"github.com/frob/nullspace/module/data/static"
+	"github.com/frob/nullspace/module/jobs"
 )
 
 var version = "dev"
@@ -48,6 +51,12 @@ func main() {
 			return
 		case "routes":
 			showRoutes()
+			return
+		case "jobs":
+			if err := showJobsCmd(); err != nil {
+				fmt.Fprintf(os.Stderr, "error: %v\n", err)
+				os.Exit(1)
+			}
 			return
 		}
 	}
@@ -77,6 +86,7 @@ func setupKernel() (*kernel.Kernel, *routing.Module, error) {
 	k.Use(static.New())
 	k.Use(fileMod)
 	k.Use(routingMod)
+	k.Use(jobs.New())
 
 	// Register conventional route handlers on the routing registry.
 	// These are resolved during kernel.after_init.
@@ -88,6 +98,29 @@ func setupKernel() (*kernel.Kernel, *routing.Module, error) {
 	}
 
 	return k, routingMod, nil
+}
+
+// showJobsCmd is the entry point for the "jobs" subcommand.
+func showJobsCmd() error {
+	k, _, err := setupKernel()
+	if err != nil {
+		return err
+	}
+	return showJobs(k, os.Stdout)
+}
+
+// showJobs prints a table of registered job handler names to w.
+func showJobs(k *kernel.Kernel, w io.Writer) error {
+	m, err := kernel.GetResource[*jobs.Module](k, "jobs")
+	if err != nil {
+		return fmt.Errorf("jobs module not enabled: %w", err)
+	}
+	tw := tabwriter.NewWriter(w, 0, 0, 2, ' ', 0)
+	fmt.Fprintln(tw, "NAME\tQUEUE")
+	for _, name := range m.Handlers().Names() {
+		fmt.Fprintf(tw, "%s\t%s\n", name, "default")
+	}
+	return tw.Flush()
 }
 
 func serve() error {
@@ -221,6 +254,7 @@ Usage:
   nullspace              Serve the project in the current directory
   nullspace init         Scaffold a new project in the current directory
   nullspace routes       List all registered routes
+  nullspace jobs         List registered job handler names
   nullspace version      Print version
   nullspace help         Print this help
 
