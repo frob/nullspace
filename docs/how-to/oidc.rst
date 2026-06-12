@@ -60,21 +60,21 @@ All settings live under the ``[oidc]`` TOML section:
     post_logout_url = "/"
     path_prefix     = "/oidc"
 
-============== ====================================== =========================================
-Field          Default                                Description
-============== ====================================== =========================================
-issuer         *(required)*                           OIDC provider issuer URL
-client_id      *(required)*                           OAuth2 client ID
-client_secret  ``""``                                 Client secret (empty for public + PKCE)
-redirect_uri   auto-derived from ``[request] addr``   Callback URL sent to the IDP
-scopes         ``["openid", "profile", "email"]``     Scopes to request
-cookie_name    ``ns_oidc``                            Encrypted session cookie name
-cookie_secret  *(ephemeral if empty)*                 32 or 64 hex chars for AES-GCM key
-cookie_secure  ``false``                              Set ``Secure`` flag on cookies
-post_login_url ``/``                                  Redirect target after login
-post_logout_url ``/``                                 Redirect target after logout
-path_prefix    ``/oidc``                              URL prefix for login/callback/logout
-============== ====================================== =========================================
+================= ====================================== =========================================
+Field             Default                                Description
+================= ====================================== =========================================
+issuer            *(required)*                           OIDC provider issuer URL
+client_id         *(required)*                           OAuth2 client ID
+client_secret     ``""``                                 Client secret (empty for public + PKCE)
+redirect_uri      auto-derived from ``[request] addr``   Callback URL sent to the IDP
+scopes            ``["openid", "profile", "email"]``     Scopes to request
+cookie_name       ``ns_oidc``                            Encrypted session cookie name
+cookie_secret     *(ephemeral if empty)*                 32 or 64 hex chars for AES-GCM key
+cookie_secure     ``false``                              Set ``Secure`` flag on cookies
+post_login_url    ``/``                                  Redirect target after login
+post_logout_url   ``/``                                  Redirect target after logout
+path_prefix       ``/oidc``                              URL prefix for login/callback/logout
+================= ====================================== =========================================
 
 .. note::
 
@@ -94,13 +94,13 @@ Registered Routes
 
 The module automatically registers three routes:
 
-================= ===================================
-Path              Purpose
-================= ===================================
-``/oidc/login``   Redirects to the IDP with PKCE
-``/oidc/callback``Handles the IDP's authorization code response
-``/oidc/logout``  Clears the session cookie and redirects
-================= ===================================
+=================== ================================================
+Path                Purpose
+=================== ================================================
+``/oidc/login``     Redirects to the IDP with PKCE
+``/oidc/callback``  Handles the IDP's authorization code response
+``/oidc/logout``    Clears the session cookie and redirects
+=================== ================================================
 
 The path prefix is configurable via the ``path_prefix`` setting.
 
@@ -201,3 +201,15 @@ Other Taskfile commands:
 
 Browse to ``http://localhost:8888``, then click **Admin** to trigger the OIDC
 login flow through Keycloak.
+
+.. seealso::
+
+   **Examples**
+
+   - ``cmd/examples/oidc/main.go`` -- complete OIDC integration with public and protected routes
+   - ``cmd/examples/oidc/nullspace.toml`` -- OIDC provider configuration, route definitions, and module settings
+   - ``cmd/examples/oidc/docker-compose.yml`` -- Keycloak setup for local development
+
+   **Source code**
+
+   - OIDC is a contributed module in a separate repository: ``github.com/frob/nullspace-oidc``

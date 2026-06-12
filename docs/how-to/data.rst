@@ -370,3 +370,17 @@ The ``_migrations`` tracking table is created automatically:
 Framework modules like ``session`` register their own migrations automatically
 when using the SQL store — you do not need to create the ``sessions`` table
 yourself.
+
+.. seealso::
+
+   **Examples**
+
+   - ``cmd/examples/kitchen-sink/content/posts/`` -- markdown files with YAML frontmatter used by the file data module
+   - ``cmd/examples/kitchen-sink/public/`` -- static files served as a fallback
+
+   **Source code**
+
+   - File-based entity module (CRUD, format parsing, lazy iterators): ``module/data/file/module.go``
+   - Static file serving with path traversal protection: ``module/data/static/module.go``
+   - SQL module (database access, health checks): ``module/data/sql/module.go``
+   - Migration system (registry, transaction model, tracking table): ``module/data/sql/migrate.go``

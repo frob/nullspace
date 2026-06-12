@@ -1,56 +1,73 @@
 Nullspace Framework Documentation
 ===================================
 
-Nullspace is an HTTP application framework written in Go for serving APIs, HTML,
-WebSockets, LLM interfaces, and future modalities. It uses hexagonal architecture
-to separate concerns and aspect-oriented programming via a hook bus and functional
+Nullspace is a multi-transport application framework written in Go for serving
+APIs, HTML, WebSockets, and more. It uses hexagonal architecture to separate
+concerns and aspect-oriented programming via a hook bus and functional
 middleware.
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Getting Started
+This documentation follows the `Diátaxis <https://diataxis.fr/>`_ framework
+and is organized into four sections:
 
-   getting-started/installation
-   getting-started/quickstart
-   getting-started/example-app
+- **Tutorials** take you through a series of steps to build your first
+  application. Start here if you are new to Nullspace.
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Core Concepts
+- **How-to guides** provide directions for solving specific problems and
+  accomplishing common tasks. They assume you already have a working Nullspace
+  application.
 
-   concepts/architecture
-   concepts/modules
-   concepts/hooks
-   concepts/configuration
-   concepts/middleware
+- **Reference** contains the technical description of every package, interface,
+  type, and function in the framework.
+
+- **Explanation** discusses the design decisions, architecture, and concepts
+  behind the framework to deepen your understanding.
 
 .. toctree::
    :maxdepth: 2
-   :caption: Guides
+   :caption: Tutorials
 
-   guides/routing
-   guides/responses
-   guides/logging
-   guides/data
-   guides/custom-modules
-   guides/session
-   guides/httpsecurity
-   guides/websocket
-   guides/oidc
-   guides/example-modules
-   guides/deployment
+   tutorials/quickstart
 
 .. toctree::
    :maxdepth: 2
-   :caption: API Reference
+   :caption: How-to Guides
 
-   api/kernel
-   api/request
-   api/response
-   api/routing
-   api/nslog
-   api/session
-   api/httpsecurity
-   api/websocket
-   api/oidc
-   api/data
+   how-to/installation
+   how-to/routing
+   how-to/responses
+   how-to/logging
+   how-to/data
+   how-to/custom-modules
+   how-to/session
+   how-to/httpsecurity
+   how-to/websocket
+   how-to/oidc
+   how-to/deployment
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Reference
+
+   reference/kernel
+   reference/request
+   reference/response
+   reference/routing
+   reference/hooks
+   reference/nslog
+   reference/session
+   reference/httpsecurity
+   reference/websocket
+   reference/oidc
+   reference/data
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Explanation
+
+   explanation/architecture
+   explanation/modules
+   explanation/hooks
+   explanation/configuration
+   explanation/middleware
+   explanation/example-app
+   explanation/example-modules

@@ -1,10 +1,14 @@
-Example Application
-===================
+About the Example Application
+=============================
 
-The repository includes two entry points that demonstrate the framework:
+The repository includes two entry points that demonstrate how the framework's
+concepts fit together in practice:
 
 - ``cmd/nullspace/`` -- The installable binary with convention-based routing
 - ``cmd/examples/kitchen-sink/`` -- A library-usage example with explicit route wiring
+
+This page explores the design patterns and architectural decisions visible in
+these examples.
 
 Using the Nullspace Binary
 --------------------------
@@ -108,3 +112,17 @@ Configuration               ``nullspace.toml`` + env        ``nullspace.toml`` +
 Content management          File-based, auto-discovered     File-based or any source
 Best for                    Content sites, prototyping      APIs, custom applications
 ==========================  ==============================  ==============================
+
+.. seealso::
+
+   **Source code**
+
+   - Kitchen-sink entry point (module wiring, custom handlers): ``cmd/examples/kitchen-sink/main.go``
+   - Kitchen-sink configuration: ``cmd/examples/kitchen-sink/nullspace.toml``
+   - Auth module: ``cmd/examples/kitchen-sink/modules/auth/module.go``
+   - Forms module: ``cmd/examples/kitchen-sink/modules/forms/module.go``
+   - Chat module: ``cmd/examples/kitchen-sink/modules/chat/module.go``
+   - Content files (markdown with YAML frontmatter): ``cmd/examples/kitchen-sink/content/posts/``
+   - HTML templates: ``cmd/examples/kitchen-sink/templates/``
+
+   See :doc:`/explanation/example-modules` for a detailed walkthrough of the auth, forms, and chat modules.

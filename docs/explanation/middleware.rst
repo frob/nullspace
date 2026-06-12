@@ -171,3 +171,15 @@ This allows the middleware to be enabled/disabled via config:
 
     [modules]
     "middleware.cors" = false
+
+.. seealso::
+
+   **Examples**
+
+   - ``cmd/examples/kitchen-sink/modules/auth/module.go`` -- middleware packaged as a configurable module with path-scoped protection and context state injection
+   - ``cmd/examples/kitchen-sink/modules/chat/module.go`` -- named middleware (``chat.name``) registered on the routing registry for use in TOML route definitions
+
+   **Source code**
+
+   - Middleware type definition and chain execution: ``core/request/adapter.go``
+   - Request context (state bag, logger, params): ``core/request/context.go``

@@ -181,3 +181,16 @@ Module Name                        Default Enabled  Package
 ``http-security``                  **no**           ``httpsecurity``
 ``websocket``                      **no**           ``websocket``
 =================================  ===============  ==============
+
+.. seealso::
+
+   **Examples**
+
+   - ``cmd/examples/kitchen-sink/main.go`` -- module registration in dependency order, from logging through application modules
+   - ``cmd/examples/kitchen-sink/modules/auth/module.go`` -- configurable module with middleware, hooks, and per-module routes
+   - ``cmd/examples/kitchen-sink/modules/forms/module.go`` -- module with custom hook points, data layer integration, and TOML-driven configuration
+
+   **Source code**
+
+   - Module, Configurable, and DataProvider interfaces: ``kernel/kernel.go``
+   - Service locator (Provide / GetResource): ``kernel/kernel.go``

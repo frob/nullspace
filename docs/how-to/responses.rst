@@ -176,3 +176,17 @@ Disabling individual resolvers:
     [modules]
     "format.query_param" = false       # disable ?format= support
     "format.content_negotiate" = false  # disable Accept header negotiation
+
+.. seealso::
+
+   **Examples**
+
+   - ``cmd/examples/kitchen-sink/main.go`` -- format resolver registration order and route metadata (``WithMeta("format", "html")``)
+   - ``cmd/examples/kitchen-sink/templates/`` -- HTML templates used by the HTML formatter
+
+   **Source code**
+
+   - Response pipeline and format dispatch: ``core/response/pipeline.go``
+   - JSON formatter with pretty-print support: ``core/response/json.go``
+   - HTML template formatter with path traversal protection: ``core/response/html.go``
+   - ANSI terminal formatter: ``core/response/ansi.go``

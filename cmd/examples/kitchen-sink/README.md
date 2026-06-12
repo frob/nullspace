@@ -224,6 +224,6 @@ NULLSPACE_LOG_LEVEL=warn go run .
 
 ## Further Reading
 
-- [Architecture docs](../../docs/concepts/architecture.rst) — hexagonal architecture and request lifecycle
-- [Custom modules guide](../../docs/guides/custom-modules.rst) — how to write your own modules
-- [Example modules guide](../../docs/guides/example-modules.rst) — detailed walkthrough of the auth and forms modules
+- [Architecture docs](../../docs/explanation/architecture.rst) — hexagonal architecture and request lifecycle
+- [Custom modules guide](../../docs/how-to/custom-modules.rst) — how to write your own modules
+- [Example modules guide](../../docs/explanation/example-modules.rst) — detailed walkthrough of the auth and forms modules

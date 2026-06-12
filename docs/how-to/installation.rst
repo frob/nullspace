@@ -70,7 +70,7 @@ To use Nullspace as a Go library in your own application::
 
     go get github.com/frob/nullspace
 
-See the :doc:`quickstart` guide for both usage patterns.
+See the :doc:`/tutorials/quickstart` tutorial for both usage patterns.
 
 Dependencies
 ------------

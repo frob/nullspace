@@ -63,7 +63,7 @@ The ``sessions`` table is created automatically via the SQL module's migration
 system — you do not need to create it manually. The session module registers
 its schema as a version 1 migration during ``Init``, and it runs at
 ``kernel.after_init`` before any module's ``Start`` method is called. See
-:doc:`/guides/data` for details on the migration system.
+:doc:`/how-to/data` for details on the migration system.
 
 Middleware
 ----------
@@ -293,3 +293,16 @@ per-user preferences), use the session module alongside your OIDC middleware:
 
 The OIDC middleware validates identity; the session module carries application
 state. They are independent and complementary.
+
+.. seealso::
+
+   **Examples**
+
+   - ``cmd/examples/oidc/main.go`` -- OIDC authentication with cookie-based sessions
+   - ``cmd/examples/oidc/nullspace.toml`` -- session and OIDC configuration
+
+   **Source code**
+
+   - Session module (middleware, create/destroy, cookie handling): ``module/session/module.go``
+   - Memory store implementation: ``module/session/memory.go``
+   - SQL store implementation: ``module/session/sql.go``

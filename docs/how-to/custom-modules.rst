@@ -324,3 +324,21 @@ Modules are initialized in registration order. Follow this pattern:
 
     // 7. Application modules (register handlers/middleware on routing registry)
     k.Use(mymodule.New())
+
+.. seealso::
+
+   **Examples**
+
+   The kitchen-sink example includes three custom modules that demonstrate the patterns above:
+
+   - ``cmd/examples/kitchen-sink/modules/auth/module.go`` -- middleware as a module, config-driven path protection, per-module route file
+   - ``cmd/examples/kitchen-sink/modules/forms/module.go`` -- declarative TOML forms, data layer integration, custom hook points
+   - ``cmd/examples/kitchen-sink/modules/chat/module.go`` -- WebSocket handler registration, room-based broadcast, middleware state injection
+   - ``cmd/examples/kitchen-sink/main.go`` -- module registration order and custom handler wiring
+
+   See :doc:`/explanation/example-modules` for a detailed walkthrough of these modules.
+
+   **Source code**
+
+   - Module and Configurable interfaces: ``kernel/kernel.go``
+   - Service locator (Provide / GetResource): ``kernel/kernel.go``

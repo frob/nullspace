@@ -53,7 +53,7 @@ Config
         PathPrefix    string   `toml:"path_prefix"`
     }
 
-See :doc:`../guides/oidc` for field descriptions and defaults.
+See :doc:`/how-to/oidc` for field descriptions and defaults.
 
 UserInfo
 --------

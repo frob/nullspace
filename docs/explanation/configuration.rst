@@ -195,3 +195,17 @@ The live config can be mutated at runtime:
 
 Changes take effect at the **next request boundary**, not mid-request.
 In-flight requests continue using their snapshot.
+
+.. seealso::
+
+   **Examples**
+
+   Each example application includes a ``nullspace.toml`` demonstrating different configuration patterns:
+
+   - ``cmd/examples/kitchen-sink/nullspace.toml`` -- collections, routing groups, auth, forms, WebSocket, and module enable/disable
+   - ``cmd/examples/oidc/nullspace.toml`` -- OIDC provider settings, cookie secrets, and route protection
+   - ``cmd/examples/grpc/nullspace.toml`` -- multi-transport configuration (HTTP, TCP, gRPC addresses and codecs)
+
+   **Source code**
+
+   - Config loading, env overrides, snapshots, and module enable/disable: ``kernel/config.go``

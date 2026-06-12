@@ -1,8 +1,9 @@
 Quickstart
 ==========
 
-There are two ways to use Nullspace: as an installable binary (convention-based,
-like Hugo) or as a Go library (full control).
+In this tutorial, you will build your first Nullspace application. There are
+two ways to use the framework -- as an installable binary (convention-based,
+like Hugo) or as a Go library (full control). We will walk through both.
 
 Using the Binary
 ----------------
@@ -185,6 +186,13 @@ A request to ``/css/style.css`` serves ``public/css/style.css``.
 Next Steps
 ----------
 
-- :doc:`example-app` -- Walk through the full example application
-- :doc:`../concepts/architecture` -- Understand the hexagonal architecture
-- :doc:`../guides/custom-modules` -- Write your own modules
+- :doc:`/explanation/example-app` -- Walk through the full example application
+- :doc:`/explanation/architecture` -- Understand the hexagonal architecture
+- :doc:`/how-to/custom-modules` -- Write your own modules
+
+.. seealso::
+
+   **Examples**
+
+   - ``cmd/examples/kitchen-sink/main.go`` -- full library-usage example with module wiring, custom handlers, auth, forms, and WebSocket chat
+   - ``cmd/examples/kitchen-sink/nullspace.toml`` -- configuration for collections, routing groups, and module settings

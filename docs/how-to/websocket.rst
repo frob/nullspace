@@ -266,5 +266,19 @@ demonstrates a complete WebSocket integration:
 
 The chat module registers a handler that broadcasts JSON messages to all
 connections in the ``chat`` room, and a middleware that reads the ``?name=``
-query parameter into the connection state. See ``cmd/examples/kitchen-sink/modules/chat/``
-for the full implementation.
+query parameter into the connection state.
+
+.. seealso::
+
+   **Examples**
+
+   - ``cmd/examples/kitchen-sink/modules/chat/module.go`` -- complete WebSocket chat room with room broadcast, middleware state injection, and named handlers
+   - ``cmd/examples/kitchen-sink/templates/chat.html`` -- browser-side WebSocket client
+   - ``cmd/examples/kitchen-sink/nullspace.toml`` -- WebSocket route configuration with ``ws_rooms`` metadata
+
+   **Source code**
+
+   - WebSocket module (upgrade, handler registration, lifecycle hooks): ``module/websocket/module.go``
+   - Connection manager (rooms, broadcast, graceful shutdown): ``module/websocket/manager.go``
+   - Connection type (send, state, close): ``module/websocket/conn.go``
+   - HTTP upgrade handler: ``module/websocket/handler.go``

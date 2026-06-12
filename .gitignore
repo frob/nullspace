@@ -4,3 +4,15 @@ coverage.out
 *.db
 docs/_build/
 scratch.md
+
+# Build artifacts
+example
+oidc
+
+# Credentials and secrets
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx

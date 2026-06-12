@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"net"
 	"net/http"
 	"time"
 
@@ -118,6 +119,16 @@ func (m *Module) Init(k *kernel.Kernel) error {
 	reg.Middleware("session.require", m.requireMiddleware())
 	reg.Middleware("session.ignore", m.ignoreMiddleware())
 
+	if !m.cfg.Secure {
+		addr := ""
+		if v, ok := k.Config().Get("request.addr"); ok {
+			addr, _ = v.(string)
+		}
+		if !isLoopback(addr) {
+			k.Logger().Warn("session cookie Secure flag is false — cookies will be sent over plain HTTP; set [session] secure = true in production")
+		}
+	}
+
 	return nil
 }
 
@@ -189,7 +200,7 @@ func (m *Module) loadMiddleware() request.Middleware {
 
 			sess, err := m.store.Load(ctx.Context(), cookie.Value)
 			if err != nil {
-				m.kernel.Logger().Warn("session load error", "error", err)
+				ctx.Logger().Warn("session load error", "error", err)
 				return next(ctx)
 			}
 			if sess != nil {
@@ -201,7 +212,7 @@ func (m *Module) loadMiddleware() request.Middleware {
 
 			if sess != nil && sess.IsDirty() {
 				if saveErr := m.store.Save(ctx.Context(), sess); saveErr != nil {
-					m.kernel.Logger().Error("session save error", "error", saveErr)
+					ctx.Logger().Error("session save error", "error", saveErr)
 				}
 			}
 
@@ -230,7 +241,7 @@ func (m *Module) requireMiddleware() request.Middleware {
 
 			sess, err := m.store.Load(ctx.Context(), cookie.Value)
 			if err != nil {
-				m.kernel.Logger().Warn("session load error", "error", err)
+				ctx.Logger().Warn("session load error", "error", err)
 				return m.unauthorized(ctx)
 			}
 			if sess == nil {
@@ -244,7 +255,7 @@ func (m *Module) requireMiddleware() request.Middleware {
 
 			if sess.IsDirty() {
 				if saveErr := m.store.Save(ctx.Context(), sess); saveErr != nil {
-					m.kernel.Logger().Error("session save error", "error", saveErr)
+					ctx.Logger().Error("session save error", "error", saveErr)
 				}
 			}
 
@@ -282,6 +293,17 @@ func (m *Module) setCookie(ctx *request.Context, id string) {
 //	k.HookResolve("session.login_url", 10, func(ctx context.Context) (any, bool, error) {
 //	    return "/login", true, nil
 //	})
+// isLoopback returns true if addr is clearly a loopback-only listen address
+// (localhost, 127.0.0.1, [::1]). Addresses like ":8080" bind to all
+// interfaces and return false.
+func isLoopback(addr string) bool {
+	host, _, err := net.SplitHostPort(addr)
+	if err != nil {
+		host = addr
+	}
+	return host == "localhost" || host == "127.0.0.1" || host == "::1"
+}
+
 func (m *Module) unauthorized(ctx *request.Context) error {
 	loginURL, err := m.kernel.Resolve("session.login_url", ctx.Context())
 	if err == nil && loginURL != nil {

@@ -80,5 +80,8 @@ func (s *SQLStore) Save(ctx context.Context, sess *Session) error {
 
 func (s *SQLStore) Delete(ctx context.Context, id string) error {
 	_, err := s.db.ExecContext(ctx, `DELETE FROM sessions WHERE id = ?`, id)
-	return err
+	if err != nil {
+		return fmt.Errorf("delete session %s: %w", id, err)
+	}
+	return nil
 }

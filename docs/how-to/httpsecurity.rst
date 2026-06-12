@@ -169,3 +169,15 @@ Route directives can be combined freely:
 
 This route will redirect HTTP to HTTPS, apply security headers, and enforce
 CSRF validation on POST requests.
+
+.. seealso::
+
+   **Examples**
+
+   - ``cmd/examples/kitchen-sink/nullspace.toml`` -- HTTP security module configuration alongside other modules
+
+   **Source code**
+
+   - Module initialization and header middleware: ``module/httpsecurity/module.go``
+   - CSRF double-submit cookie implementation: ``module/httpsecurity/csrf.go``
+   - HTTPS redirect middleware: ``module/httpsecurity/redirect.go``

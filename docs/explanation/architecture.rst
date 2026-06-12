@@ -99,3 +99,17 @@ Configuration is mutable at runtime, but each request sees an immutable
 snapshot taken at step 1. Two concurrent requests may run under different
 configurations if the live config changed between their starts. This guarantees
 consistent behavior within a single request.
+
+.. seealso::
+
+   **Examples**
+
+   - ``cmd/examples/grpc/main.go`` -- multi-transport architecture: HTTP, TCP, and gRPC adapters sharing a single kernel, hook bus, and config
+   - ``cmd/examples/kitchen-sink/main.go`` -- module wiring in dependency order with the full request/response pipeline
+
+   **Source code**
+
+   - Kernel (registry, lifecycle, service locator): ``kernel/kernel.go``
+   - Hook bus (priority ordering, config-aware execution): ``kernel/hook.go``
+   - Configuration (TOML loading, env overrides, snapshots): ``kernel/config.go``
+   - HTTP adapter (request lifecycle, middleware chain): ``core/request/adapter.go``

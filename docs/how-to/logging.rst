@@ -152,3 +152,14 @@ From the service locator:
 .. code-block:: go
 
     logger, _ := kernel.GetResource[kernel.Logger](k, "logger")
+
+.. seealso::
+
+   **Examples**
+
+   - ``cmd/examples/kitchen-sink/main.go`` -- per-request structured logging in action (run the example and observe the log output)
+
+   **Source code**
+
+   - Logging module (hook registration, config, request enrichment): ``core/nslog/module.go``
+   - Logger interface definition: ``kernel/kernel.go``

@@ -1,9 +1,11 @@
-Example Modules
-===============
+About the Example Modules
+=========================
 
-The example application at ``cmd/examples/kitchen-sink/`` includes three custom modules that
-demonstrate how to extend the framework. These are reference implementations
-— study them to understand the patterns, then adapt for your own modules.
+The example application at ``cmd/examples/kitchen-sink/`` includes three custom
+modules that demonstrate how to extend the framework. This page explores the
+design patterns and architectural decisions in each module -- study them to
+deepen your understanding, then see :doc:`/how-to/custom-modules` when you are
+ready to build your own.
 
 Auth Module
 -----------

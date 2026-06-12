@@ -321,3 +321,16 @@ List all registered routes with the ``routes`` command::
 
 This shows TOML-defined routes. Go-defined routes also appear in the router
 but are not tracked in the route table.
+
+.. seealso::
+
+   **Examples**
+
+   - ``cmd/examples/kitchen-sink/nullspace.toml`` -- collections, groups, route definitions, and per-module route references
+   - ``cmd/examples/kitchen-sink/modules/auth/routes.toml`` -- per-module embedded route file with named middleware
+
+   **Source code**
+
+   - Route config parsing and collection expansion: ``core/routing/config.go``
+   - Built-in data handlers (list, get, create, update, delete): ``core/routing/handlers.go``
+   - Module lifecycle and route table resolution: ``core/routing/module.go``
