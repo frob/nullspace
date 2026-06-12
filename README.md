@@ -460,7 +460,10 @@ nullspace/
 │   │   ├── file/       File-based entity storage (with lazy iterator)
 │   │   ├── sql/        SQL with SQLite default
 │   │   └── bridge/     TCP/IPC data command bridge
-│   └── session/        Session management (memory and SQL stores)
+│   ├── httpsecurity/   Security headers, CSRF, HTTPS redirect
+│   ├── jobs/           Background-job runner (memory and SQL stores)
+│   ├── session/        Session management (memory and SQL stores)
+│   └── websocket/      WebSocket upgrade, rooms, broadcast
 ├── docs/               Documentation (Sphinx / Read the Docs)
 └── specs/              Architecture specifications
 ```
