@@ -3,3 +3,8 @@ coverage.out
 bin/
 *.db
 .git
+go.work
+go.work.sum
+scratch.md
+example
+oidc

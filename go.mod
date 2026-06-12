@@ -6,6 +6,7 @@ require (
 	github.com/pelletier/go-toml/v2 v2.3.0
 	gopkg.in/yaml.v3 v3.0.1
 	modernc.org/sqlite v1.47.0
+	nhooyr.io/websocket v1.8.17
 )
 
 require (
@@ -18,5 +19,4 @@ require (
 	modernc.org/libc v1.70.0 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect
-	nhooyr.io/websocket v1.8.17 // indirect
 )

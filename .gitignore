@@ -4,3 +4,12 @@ coverage.out
 *.db
 docs/_build/
 scratch.md
+
+# Local multi-repo workspace — not portable, never commit
+go.work
+go.work.sum
+
+# Stray `go build` outputs at repo root
+/example
+/oidc
+/nullspace
