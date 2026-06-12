@@ -516,3 +516,7 @@ Full documentation is in the `docs/` directory, formatted for Read the Docs.
 task docs:build         # Build HTML docs in a container
 task docs:serve         # Build and serve at localhost:8000
 ```
+
+## License
+
+Nullspace is licensed under the [Mozilla Public License 2.0](LICENSE) (MPL-2.0), and the license applies to every source file in this repository. You can use nullspace in closed-source software without restriction; modifications to nullspace's own files must be made available under the MPL.

@@ -29,6 +29,21 @@ For longer-horizon planning see [ROADMAP.md](ROADMAP.md).
 - `core/routing`: the `kernel.after_init` hook now skips the router
   lookup when no routes need registering, so kernels that use the
   registry without an HTTP adapter can boot cleanly.
+- Licensed under the Mozilla Public License 2.0 (`LICENSE` added;
+  release packages now declare MPL-2.0).
+- `cmd/examples/grpc` and `cmd/examples/oidc` moved into their own Go
+  modules so the main module no longer depends on sibling contrib
+  checkouts. Fresh clones build and test without a `go.work`; the
+  examples require `nullspace-grpc` / `nullspace-oidc` checked out as
+  siblings.
+- `nhooyr.io/websocket` is now a direct dependency in `go.mod`
+  (was mislabeled `// indirect`).
+
+### Removed
+
+- Stray `example` and `oidc` binaries committed at the repo root, and
+  the committed `go.work`/`go.work.sum` (both now gitignored). History
+  was rewritten to purge the binaries.
 
 ## [0.0.x] - 2026-06-07
 

@@ -71,7 +71,7 @@ nfpms:
     homepage: "https://github.com/frob/nullspace"
     maintainer: "frob"
     description: "HTTP application framework for APIs, HTML, WebSockets, and more"
-    license: "MIT"
+    license: "MPL-2.0"
     formats:
       - deb
       - rpm
